@@ -1,0 +1,231 @@
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    background: #f0f2f5;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* Auth Pages */
+  .auth-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .auth-form input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .btn-primary {
+    background: #2196F3;
+    color: white;
+  }
+  
+  /* Dashboard Common */
+  .dashboard-header {
+    background: white;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+  }
+  
+  .assignments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .assignment-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  /* Lecturer Specific */
+  .grading-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .grading-table td, .grading-table th {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+  }
+  
+  /* Student Specific */
+  .submission-form {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  
+  .file-upload {
+    border: 2px dashed #ddd;
+    padding: 20px;
+    text-align: center;
+    margin: 15px 0;
+  }
+
+  /* Subject Selection */
+.error-message {
+    color: #dc3545;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  
+  .subject-card {
+    transition: transform 0.2s;
+    margin: 10px 0;
+  }
+  
+  .subject-card:hover {
+    transform: translateY(-3px);
+  }
+  
+  .subject-card label {
+    padding: 15px;
+    display: block;
+  }
+  
+  .subject-card input:checked + label {
+    background-color: #e8f4ff;
+    border-radius: 5px;
+  }
+
+  /* Assignment Forms */
+.assignment-form, .submission-form {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.file-upload {
+  border: 2px dashed #ddd;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.file-upload input[type="file"] {
+  display: none;
+}
+
+.file-upload label {
+  display: block;
+  cursor: pointer;
+  color: #2196F3;
+  font-weight: normal;
+}
+
+.file-preview {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 5px;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+
+/* Radio Button Styles */
+.radio-group {
+  margin: 15px 0;
+  display: flex;
+  gap: 20px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.radio-option input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #2196F3;
+  border-radius: 50%;
+  margin-right: 8px;
+  position: relative;
+  cursor: pointer;
+}
+
+.radio-option input[type="radio"]:checked::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  background: #2196F3;
+  border-radius: 50%;
+}
+
+.radio-label {
+  font-size: 16px;
+  color: #333;
+}

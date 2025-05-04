@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Assignment</title>
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+  <div class="dashboard-header">
+    <h1>Create New Assignment</h1>
+    <button onclick="location.href='/lecturer-dash.html'" class="btn btn-secondary">Back to Dashboard</button>
+  </div>
+
+  <div class="container">
+    <form id="assignmentForm" class="assignment-form">
+      <div class="form-group">
+        <label for="title">Assignment Title</label>
+        <input type="text" id="title" name="title" required>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="4" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="deadline">Deadline</label>
+        <input type="date" id="deadline" name="deadline" required>
+      </div>
+
+      <div class="form-group">
+        <label for="subject">Subject</label>
+        <select id="subject" name="subject" required>
+          <!-- Dynamically loaded -->
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Create Assignment</button>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Load subjects
+      const response = await fetch('/api/subjects');
+      const subjects = await response.json();
+      
+      const select = document.getElementById('subject');
+      select.innerHTML = subjects.map(subject => 
+        `<option value="${subject.id}">${subject.name}</option>`
+      ).join('');
+
+      // Form submission
+      document.getElementById('assignmentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const assignment = {
+          title: document.getElementById('title').value,
+          description: document.getElementById('description').value,
+          deadline: document.getElementById('deadline').value,
+          subjectId: document.getElementById('subject').value
+        };
+
+        try {
+          const response = await fetch('/api/assignments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(assignment)
+          });
+
+          if (response.ok) {
+            alert('Assignment created successfully!');
+            window.location.href = '/lecturer-dash.html';
+          } else {
+            alert('Error creating assignment');
+          }
+        } catch (err) {
+          console.error('Error:', err);
+          alert('Failed to create assignment');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

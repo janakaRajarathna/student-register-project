@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lecturer Dashboard</title>
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+  <div class="dashboard-header">
+    <h1>Lecturer Dashboard</h1>
+    <button onclick="location.href='/create-assignment.html'" class="btn btn-primary">Create Assignment</button>
+  </div>
+
+  <div class="container">
+    <h2>Submissions to Grade</h2>
+    <table class="grading-table">
+      <tr>
+        <th>Student</th>
+        <th>Assignment</th>
+        <th>Submission Date</th>
+        <th>Grade</th>
+        <th>Action</th>
+      </tr>
+      <tr>
+        <td>John Doe</td>
+        <td>Math Assignment 1</td>
+        <td>2023-08-15</td>
+        <td>-</td>
+        <td><button class="btn btn-primary">Grade Now</button></td>
+      </tr>
+    </table>
+
+    <div style="margin-top: 40px;">
+      <h2>Class Performance</h2>
+      <canvas id="classChart" style="max-width: 800px; margin-top: 20px;"></canvas>
+    </div>
+  </div>
+
+  <script src="/js/lecturer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
