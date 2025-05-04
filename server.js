@@ -6,11 +6,15 @@ const mysql = require('mysql2/promise');
 const path = require('path');
 const app = express();
 
+// Import routes
+const authRoutes = require('./routes/authRoutes');
+const mainRoutes = require('./routes/mainRoutes');
+
 // Database Configuration
 const dbConfig = {
   host: 'localhost',
   user: 'root',
-  password: '',
+  password: '1234',
   database: 'assignment_system'
 };
 
@@ -24,7 +28,20 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false }
 }));
+
+// Static files configuration
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/css', express.static(path.join(__dirname, 'public/css')));
+app.use('/js', express.static(path.join(__dirname, 'public/js')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
+// Template Engine Configuration
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Route Middleware
+app.use('/auth', authRoutes);
+app.use('/', mainRoutes);
 
 // Database Connection Middleware
 app.use(async (req, res, next) => {
@@ -42,12 +59,12 @@ app.post('/api/register', async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const [result] = await req.db.execute(
       'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
       [name, email, hashedPassword, role]
     );
-    
+
     res.json({ success: true, userId: result.insertId });
   } catch (error) {
     console.error('Registration error:', error);
@@ -62,19 +79,19 @@ app.post('/api/login', async (req, res) => {
       'SELECT * FROM users WHERE email = ?',
       [email]
     );
-    
+
     if (users.length === 0) return res.status(401).json({ error: 'Invalid credentials' });
-    
+
     const user = users[0];
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(401).json({ error: 'Invalid credentials' });
-    
+
     req.session.user = {
       id: user.id,
       name: user.name,
       role: user.role
     };
-    
+
     res.json({ success: true, role: user.role });
   } catch (error) {
     console.error('Login error:', error);
@@ -99,7 +116,7 @@ app.get('/api/subjects', async (req, res) => {
 
 app.post('/api/select-subject', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  
+
   req.session.subjectId = req.body.subjectId;
   res.json({ success: true });
 });
@@ -116,7 +133,7 @@ app.post('/api/assignments', async (req, res) => {
       'INSERT INTO assignments (title, description, deadline, lecturer_id) VALUES (?, ?, ?, ?)',
       [title, description, deadline, req.session.user.id]
     );
-    
+
     res.json({ success: true, assignmentId: result.insertId });
   } catch (error) {
     console.error('Assignment creation error:', error);
@@ -165,7 +182,7 @@ app.post('/api/grade', async (req, res) => {
       'INSERT INTO grades (submission_id, grade, feedback, graded_by) VALUES (?, ?, ?, ?)',
       [submissionId, grade, feedback, req.session.user.id]
     );
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error('Grading error:', error);
@@ -236,7 +253,7 @@ app.get('/api/submissions', async (req, res) => {
       LEFT JOIN grades g ON s.id = g.submission_id
       WHERE a.lecturer_id = ?
     `, [req.session.user.id]);
-    
+
     res.json(submissions);
   } catch (error) {
     res.status(500).json({ error: 'Failed to load submissions' });
