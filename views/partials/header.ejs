@@ -1,0 +1,57 @@
+<header>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/">Assignment System</a>
+        </div>
+        <div class="nav-links">
+            <% if (user) { %>
+                <a href="/dashboard">Dashboard</a>
+                <% if (user.role==='admin' ) { %>
+                    <a href="/admin">Admin Panel</a>
+                    <% } else if (user.role==='lecturer' ) { %>
+                        <a href="/lecturer">Lecturer Panel</a>
+                        <% } else if (user.role==='student' ) { %>
+                            <a href="/student">Student Panel</a>
+                            <% } %>
+                                <a href="/auth/logout">Logout</a>
+                                <% } else { %>
+                                    <a href="/auth/login">Login</a>
+                                    <a href="/auth/register">Register</a>
+                                    <% } %>
+        </div>
+    </nav>
+</header>
+
+<style>
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-brand a {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .nav-links a {
+        color: #495057;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .nav-links a:hover {
+        color: #007bff;
+    }
+</style>

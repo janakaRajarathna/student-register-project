@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-header">
+        <h1>Student Dashboard</h1>
+        <button onclick="location.href='/student/submit-assignment'" class="btn btn-primary">Submit Assignment</button>
+    </div>
+
+    <div class="container">
+        <h2>Your Assignments</h2>
+        <div class="assignments-grid" id="assignmentsList">
+            <% if (assignments && assignments.length> 0) { %>
+                <% assignments.forEach(assignment=> { %>
+                    <div class="assignment-card">
+                        <h3>
+                            <%= assignment.title %>
+                        </h3>
+                        <p>Status: <%= assignment.status || 'Not Submitted' %>
+                        </p>
+                        <p>Grade: <%= assignment.grade ? assignment.grade + '/100' : 'Not Graded' %>
+                        </p>
+                        <p>Deadline: <%= new Date(assignment.deadline).toLocaleDateString() %>
+                        </p>
+                    </div>
+                    <% }); %>
+                        <% } else { %>
+                            <p>No assignments found.</p>
+                            <% } %>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <h2>Performance Chart</h2>
+            <canvas id="performanceChart" style="max-width: 600px; margin-top: 20px;"></canvas>
+        </div>
+    </div>
+
+    <script src="/js/student.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+
+</html>

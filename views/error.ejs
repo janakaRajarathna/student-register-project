@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - <%= error.status || 'Error' %>
+    </title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .error-title {
+            font-size: 2rem;
+            color: #343a40;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            font-size: 1.2rem;
+            color: #6c757d;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .error-details {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #495057;
+            max-width: 600px;
+            text-align: left;
+        }
+
+        .error-details pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <% if (typeof user !=='undefined' ) { %>
+        <%- include('partials/header') %>
+            <% } else { %>
+                <header>
+                    <nav class="navbar">
+                        <div class="nav-brand">
+                            <a href="/">Assignment System</a>
+                        </div>
+                        <div class="nav-links">
+                            <a href="/auth/login">Login</a>
+                            <a href="/auth/register">Register</a>
+                        </div>
+                    </nav>
+                </header>
+                <% } %>
+
+                    <div class="error-container">
+                        <div class="error-icon">⚠️</div>
+                        <h1 class="error-title">
+                            <%= error.status || 'Error' %> - <%= error.message || 'Something went wrong' %>
+                        </h1>
+                        <p class="error-message">
+                            <%= error.description || 'We apologize for the inconvenience. Please try again later.' %>
+                        </p>
+                        <div class="error-actions">
+                            <a href="/" class="btn btn-primary">Go Home</a>
+                            <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+                        </div>
+                        <% if (process.env.NODE_ENV==='development' && error.stack) { %>
+                            <div class="error-details">
+                                <pre><%= error.stack %></pre>
+                            </div>
+                            <% } %>
+                    </div>
+
+                    <%- include('partials/footer') %>
+</body>
+
+</html>

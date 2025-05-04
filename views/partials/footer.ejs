@@ -1,0 +1,79 @@
+<footer>
+    <div class="footer-content">
+        <div class="footer-section">
+            <h3>Assignment System</h3>
+            <p>A modern platform for managing academic assignments</p>
+        </div>
+        <div class="footer-section">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h3>Contact</h3>
+            <p>Email: support@assignmentsystem.com</p>
+            <p>Phone: +1 234 567 890</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; <%= new Date().getFullYear() %> Assignment System. All rights reserved.</p>
+    </div>
+</footer>
+
+<style>
+    footer {
+        background-color: #343a40;
+        color: #fff;
+        padding: 2rem 0;
+        margin-top: 2rem;
+    }
+
+    .footer-content {
+        display: flex;
+        justify-content: space-around;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .footer-section {
+        flex: 1;
+        margin: 0 1rem;
+    }
+
+    .footer-section h3 {
+        color: #fff;
+        margin-bottom: 1rem;
+    }
+
+    .footer-section p,
+    .footer-section li {
+        color: #adb5bd;
+        margin-bottom: 0.5rem;
+    }
+
+    .footer-section a {
+        color: #adb5bd;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .footer-section a:hover {
+        color: #fff;
+    }
+
+    .footer-bottom {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #495057;
+    }
+
+    .footer-bottom p {
+        color: #adb5bd;
+        margin: 0;
+    }
+</style>
