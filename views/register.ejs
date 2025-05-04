@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Register</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div class="auth-container">
+    <h2>Create Account</h2>
+    <form class="auth-form" action="/register" method="POST">
+      <input type="text" name="name" placeholder="Full Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="role" value="student" checked>
+          <span class="radio-label">Student</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="role" value="lecturer">
+          <span class="radio-label">Lecturer</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+  </div>
+</body>
+
+</html>
