@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturer Dashboard - <%= user.name %>
+    </title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* ... existing styles ... */
+        .logout-link {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: #dc3545;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .logout-link:hover {
+            color: #c82333;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <%- include('../partials/header', { user }) %> -->
+
+        <a href="/auth/logout" class="logout-link">Logout</a>
+
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Lecturer Dashboard</h1>
+                <button onclick="location.href='/create-assignment.html'" class="btn btn-primary">Create
+                    Assignment</button>
+            </div>
+
+            <div class="container">
+                <h2>Submissions to Grade</h2>
+                <table class="grading-table">
+                    <tr>
+                        <th>Student</th>
+                        <th>Assignment</th>
+                        <th>Submission Date</th>
+                        <th>Grade</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr>
+                        <td>John Doe</td>
+                        <td>Math Assignment 1</td>
+                        <td>2023-08-15</td>
+                        <td>-</td>
+                        <td><button class="btn btn-primary">Grade Now</button></td>
+                    </tr>
+                </table>
+
+                <div style="margin-top: 40px;">
+                    <h2>Class Performance</h2>
+                    <canvas id="classChart" style="max-width: 800px; margin-top: 20px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <%- include('../partials/footer') %>
+
+            <script src="/js/lecturer.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+
+</html>

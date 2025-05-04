@@ -15,6 +15,8 @@ const studentRoutes = require('./routes/studentRoutes');
 const AuthController = require('./controllers/authController');
 const AuthMiddleware = require('./middleware/authMiddleware');
 const StudentController = require('./controllers/studentController');
+const lecturerRoutes = require('./routes/lecturerRoutes');
+const LecturerController = require('./controllers/lecturerController');
 
 // Ensure required environment variables exist
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-123';
@@ -68,6 +70,7 @@ app.use(async (req, res, next) => {
     req.db = db;
     req.authController = new AuthController(db);
     req.studentController = new StudentController(db);
+    req.lecturerController = new LecturerController(db);
     req.authMiddleware = authMiddleware;
     next();
   } catch (err) {
@@ -97,6 +100,7 @@ app.use('/student', (req, res, next) => {
 // Route Middleware
 app.use('/auth', authRoutes);
 app.use('/student', studentRoutes);
+app.use('/lecturer', lecturerRoutes);
 app.use('/', mainRoutes);
 
 // Authentication Routes
@@ -265,7 +269,8 @@ app.get('/api/performance', async (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-   console.log('error middleware called >>>');
+  console.log('error middleware called >>>');
+  console.log('error:', err);
 
   // Ensure error object has required properties
   const errorObj = {
