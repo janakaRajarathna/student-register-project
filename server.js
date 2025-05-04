@@ -1,33 +1,52 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const fileUpload = require('express-fileupload');
 const bcrypt = require('bcryptjs');
 const mysql = require('mysql2/promise');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 const app = express();
 
-// Import routes
+// Import routes and controllers
 const authRoutes = require('./routes/authRoutes');
 const mainRoutes = require('./routes/mainRoutes');
+const studentRoutes = require('./routes/studentRoutes');
+const AuthController = require('./controllers/authController');
+const AuthMiddleware = require('./middleware/authMiddleware');
+const StudentController = require('./controllers/studentController');
+
+// Ensure required environment variables exist
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-123';
+const DB_HOST = process.env.DB_HOST || 'localhost';
+const DB_USER = process.env.DB_USER || 'root';
+const DB_PASSWORD = process.env.DB_PASSWORD || '1234';
+const DB_NAME = process.env.DB_NAME || 'assignment_system';
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Database Configuration
 const dbConfig = {
-  host: 'localhost',
-  user: 'root',
-  password: '1234',
-  database: 'assignment_system'
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME
 };
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(fileUpload());
+app.use(cookieParser());
 app.use(session({
-  secret: 'your-secret-key',
+  secret: JWT_SECRET,
   resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }
+  saveUninitialized: false,
+  cookie: {
+    secure: NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
 }));
+app.use(fileUpload());
 
 // Static files configuration
 app.use(express.static(path.join(__dirname, 'public')));
@@ -39,20 +58,46 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Route Middleware
-app.use('/auth', authRoutes);
-app.use('/', mainRoutes);
+// Initialize auth middleware and controller
+const authMiddleware = new AuthMiddleware(JWT_SECRET);
 
 // Database Connection Middleware
 app.use(async (req, res, next) => {
   try {
-    req.db = await mysql.createConnection(dbConfig);
+    const db = await mysql.createConnection(dbConfig);
+    req.db = db;
+    req.authController = new AuthController(db);
+    req.studentController = new StudentController(db);
+    req.authMiddleware = authMiddleware;
     next();
   } catch (err) {
     console.error('Database connection error:', err);
     res.status(500).send('Database connection error');
   }
 });
+
+// Apply auth middleware to protected routes
+app.use('/dashboard', (req, res, next) => req.authMiddleware.requireAuth(req, res, next));
+app.use('/admin', (req, res, next) => {
+  req.authMiddleware.requireAuth(req, res, () => {
+    req.authMiddleware.checkRole(['admin'])(req, res, next);
+  });
+});
+app.use('/lecturer', (req, res, next) => {
+  req.authMiddleware.requireAuth(req, res, () => {
+    req.authMiddleware.checkRole(['lecturer'])(req, res, next);
+  });
+});
+app.use('/student', (req, res, next) => {
+  req.authMiddleware.requireAuth(req, res, () => {
+    req.authMiddleware.checkRole(['student'])(req, res, next);
+  });
+});
+
+// Route Middleware
+app.use('/auth', authRoutes);
+app.use('/student', studentRoutes);
+app.use('/', mainRoutes);
 
 // Authentication Routes
 app.post('/api/register', async (req, res) => {
@@ -216,6 +261,30 @@ app.get('/api/performance', async (req, res) => {
     console.error('Analytics error:', error);
     res.status(500).json({ error: 'Failed to load analytics' });
   }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+   console.log('error middleware called >>>');
+
+  // Ensure error object has required properties
+  const errorObj = {
+    status: err.status || 500,
+    message: err.message || 'Internal Server Error',
+    description: err.description || 'An unexpected error occurred',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  };
+
+  // If it's a database error, add more user-friendly message
+  if (err.code === 'ER_NO_SUCH_TABLE') {
+    errorObj.description = 'Database table not found. Please contact the administrator.';
+  }
+
+  res.status(errorObj.status);
+  res.render('error', {
+    error: errorObj,
+    user: req.user // Pass user object if available
+  });
 });
 
 // Start Server
