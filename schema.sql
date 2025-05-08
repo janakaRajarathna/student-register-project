@@ -30,14 +30,25 @@ CREATE TABLE IF NOT EXISTS assignments (
 );
 
 -- Submissions Table
-CREATE TABLE IF NOT EXISTS submissions (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    assignment_id INT,
-    student_id INT,
-    file_path VARCHAR(255) NOT NULL,
-    submission_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (assignment_id) REFERENCES assignments(id),
-    FOREIGN KEY (student_id) REFERENCES users(id)
+ CREATE TABLE `submissions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `assignment_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `assignment_file` mediumblob DEFAULT NULL,
+  `submitted_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `student_comment` text NOT NULL,
+  `marks` decimal(5,2) DEFAULT NULL,
+  `feedback` text DEFAULT NULL,
+  `marked_by` int(11) DEFAULT NULL,
+  `marked_at` timestamp NULL DEFAULT NULL,
+  `status` enum('PENDING','MARKED','REJECTED','') NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_submissions_assignment_id` (`assignment_id`),
+  KEY `idx_submissions_student_id` (`student_id`),
+  KEY `idx_submissions_marked_by` (`marked_by`),
+  CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`assignment_id`) REFERENCES `assignments` (`id`),
+  CONSTRAINT `submissions_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `submissions_ibfk_3` FOREIGN KEY (`marked_by`) REFERENCES `users` (`id`)
 );
 
 -- Grades Table

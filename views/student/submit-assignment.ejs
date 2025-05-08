@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Assignment</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .submit-assignment-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        select,
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-text {
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .btn-submit {
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .btn-submit:hover {
+            background-color: #45a049;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #666;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: #333;
+        }
+
+        .no-assignments {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 4px;
+            color: white;
+            display: none;
+            z-index: 1000;
+        }
+
+        .toast-success {
+            background-color: #4CAF50;
+        }
+
+        .toast-error {
+            background-color: #f44336;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+
+        .file-name {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toast" class="toast"></div>
+    <div class="submit-assignment-container">
+        <a href="/student/dashboard" class="back-link">← Back to Dashboard</a>
+        <h1>Submit Assignment</h1>
+
+        <% if (assignments && assignments.length> 0) { %>
+            <form id="submitForm" action="/student/submit-assignment" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="assignment">Select Assignment</label>
+                    <select id="assignment" name="assignmentId" required>
+                        <option value="">Choose an assignment...</option>
+                        <% assignments.forEach(assignment=> { %>
+                            <option value="<%= assignment.id %>">
+                                <%= assignment.title %> - Due: <%= new Date(assignment.deadline).toLocaleDateString() %>
+                            </option>
+                            <% }); %>
+                    </select>
+                    <div id="assignmentError" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="file">Upload File</label>
+                    <div class="file-input-wrapper">
+                        <div class="file-input-button" id="fileButton">Choose File</div>
+                        <input type="file" id="file" name="file" required>
+                    </div>
+                    <div id="fileName" class="file-name">No file chosen</div>
+                    <div class="form-text">Accepted formats: PDF, DOC, DOCX, ZIP (Max size: 10MB)</div>
+                    <div id="fileError" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="comments">Additional Comments (Optional)</label>
+                    <textarea id="comments" name="comments" rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">Submit Assignment</button>
+            </form>
+            <% } else { %>
+                <div class="no-assignments">
+                    <i class="fas fa-info-circle"></i>
+                    <p>No pending assignments available for submission.</p>
+                </div>
+                <% } %>
+    </div>
+
+    <script>
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.style.display = 'block';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function showError(fieldId, message) {
+            const errorElement = document.getElementById(`${fieldId}Error`);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function clearErrors() {
+            const errorElements = document.getElementsByClassName('error-message');
+            Array.from(errorElements).forEach(element => {
+                element.style.display = 'none';
+                element.textContent = '';
+            });
+        }
+
+        function validateForm() {
+            clearErrors();
+            let isValid = true;
+
+            const assignment = document.getElementById('assignment').value;
+            const file = document.getElementById('file').files[0];
+
+            if (!assignment) {
+                showError('assignment', 'Please select an assignment');
+                isValid = false;
+            }
+
+            if (!file) {
+                showError('file', 'Please select a file to upload');
+                isValid = false;
+            } else {
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                if (file.size > maxSize) {
+                    showError('file', 'File size exceeds 10MB limit');
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        }
+
+        // File input styling
+        const fileInput = document.getElementById('file');
+        const fileButton = document.getElementById('fileButton');
+        const fileName = document.getElementById('fileName');
+
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                if (file.size > maxSize) {
+                    showError('file', 'File size exceeds 10MB limit');
+                    this.value = '';
+                    fileName.textContent = 'No file chosen';
+                } else {
+                    clearErrors();
+                }
+            } else {
+                fileName.textContent = 'No file chosen';
+            }
+        });
+
+        // Form submission
+        document.getElementById('submitForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            if (!validateForm()) {
+                return;
+            }
+
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch('/student/submit-assignment', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Assignment submitted successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/student/dashboard';
+                    }, 1500);
+                } else {
+                    showToast(data.message || 'Failed to submit assignment', 'error');
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit Assignment';
+                }
+            } catch (error) {
+                showToast('An error occurred. Please try again.', 'error');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Assignment';
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -44,6 +44,50 @@ class Student {
             throw error;
         }
     }
+
+    async submitAssignment({ assignmentId, studentId, filePath, comments }) {
+        try {
+            // Check if submission already exists
+            const [existingSubmission] = await this.db.execute(
+                'SELECT id FROM submissions WHERE assignment_id = ? AND student_id = ?',
+                [assignmentId, studentId]
+            );
+
+            if (existingSubmission.length > 0) {
+                throw new Error('You have already submitted this assignment');
+            }
+
+            // Check if assignment deadline has passed
+            const [assignment] = await this.db.execute(
+                'SELECT deadline FROM assignments WHERE id = ?',
+                [assignmentId]
+            );
+
+            if (!assignment.length) {
+                throw new Error('Assignment not found');
+            }
+
+            const deadline = new Date(assignment[0].deadline);
+            const now = new Date();
+
+            if (now > deadline) {
+                throw new Error('Assignment deadline has passed');
+            }
+
+            // Insert new submission
+            const [result] = await this.db.execute(
+                `INSERT INTO submissions 
+                (assignment_id, student_id, assignment_file, student_comment, status) 
+                VALUES (?, ?, ?, ?, 'PENDING')`,
+                [assignmentId, studentId, filePath, comments]
+            );
+
+            return result.insertId;
+        } catch (error) {
+            console.error('Error submitting assignment:', error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Student; 
