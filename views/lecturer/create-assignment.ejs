@@ -66,33 +66,167 @@
         .back-link:hover {
             color: #333;
         }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 4px;
+            color: white;
+            display: none;
+            z-index: 1000;
+        }
+
+        .toast-success {
+            background-color: #4CAF50;
+        }
+
+        .toast-error {
+            background-color: #f44336;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
     </style>
 </head>
 
 <body>
+    <div id="toast" class="toast"></div>
     <div class="create-assignment-container">
         <a href="/lecturer/dashboard" class="back-link">← Back to Dashboard</a>
         <h1>Create New Assignment</h1>
-        <form action="/lecturer/create-assignment" method="POST">
+        <form id="createAssignmentForm" action="/lecturer/create-assignment" method="POST">
             <div class="form-group">
                 <label for="title">Assignment Title</label>
                 <input type="text" id="title" name="title" required>
+                <div id="titleError" class="error-message"></div>
             </div>
             <div class="form-group">
                 <label for="description">Description</label>
                 <textarea id="description" name="description" required></textarea>
+                <div id="descriptionError" class="error-message"></div>
             </div>
             <div class="form-group">
                 <label for="deadline">Deadline</label>
                 <input type="date" id="deadline" name="deadline" required>
+                <div id="deadlineError" class="error-message"></div>
             </div>
             <div class="form-group">
                 <label for="maxMarks">Maximum Marks</label>
                 <input type="number" id="maxMarks" name="maxMarks" min="1" required>
+                <div id="maxMarksError" class="error-message"></div>
             </div>
             <button type="submit" class="btn-submit">Create Assignment</button>
         </form>
     </div>
+
+    <script>
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.style.display = 'block';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function showError(fieldId, message) {
+            const errorElement = document.getElementById(`${fieldId}Error`);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function clearErrors() {
+            const errorElements = document.getElementsByClassName('error-message');
+            Array.from(errorElements).forEach(element => {
+                element.style.display = 'none';
+                element.textContent = '';
+            });
+        }
+
+        function validateForm() {
+            clearErrors();
+            let isValid = true;
+
+            const title = document.getElementById('title').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const deadline = document.getElementById('deadline').value;
+            const maxMarks = document.getElementById('maxMarks').value;
+
+            if (title.length < 3) {
+                showError('title', 'Title must be at least 3 characters long');
+                isValid = false;
+            }
+
+            if (description.length < 10) {
+                showError('description', 'Description must be at least 10 characters long');
+                isValid = false;
+            }
+
+            if (!deadline) {
+                showError('deadline', 'Please select a deadline');
+                isValid = false;
+            } else {
+                const selectedDate = new Date(deadline);
+                const today = new Date();
+                if (selectedDate < today) {
+                    showError('deadline', 'Deadline cannot be in the past');
+                    isValid = false;
+                }
+            }
+
+            if (!maxMarks || maxMarks < 1) {
+                showError('maxMarks', 'Maximum marks must be at least 1');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        document.getElementById('createAssignmentForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            if (!validateForm()) {
+                return;
+            }
+
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Creating...';
+
+            try {
+                const response = await fetch('/lecturer/create-assignment', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Assignment created successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/lecturer/dashboard';
+                    }, 1500);
+                } else {
+                    showToast(data.message || 'Failed to create assignment', 'error');
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Create Assignment';
+                }
+            } catch (error) {
+                showToast('An error occurred. Please try again.', 'error');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Create Assignment';
+            }
+        });
+    </script>
 </body>
 
 </html>

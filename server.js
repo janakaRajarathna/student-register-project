@@ -50,6 +50,12 @@ app.use(session({
 }));
 app.use(fileUpload());
 
+// Add middleware to pass user data to all views
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
+});
+
 // Static files configuration
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/css', express.static(path.join(__dirname, 'public/css')));
@@ -288,7 +294,7 @@ app.use((err, req, res, next) => {
   res.status(errorObj.status);
   res.render('error', {
     error: errorObj,
-    user: req.user // Pass user object if available
+    user: req.session.user || null // Pass user object if available
   });
 });
 
