@@ -1,14 +1,31 @@
+const Lecturer = require('../models/Lecturer');
+
 class LecturerController {
     constructor(db) {
         this.db = db;
         this.Assignment = require('../models/Assignment');
         this.assignmentModel = new this.Assignment(db);
+        this.lecturerModel = new Lecturer(db);
     }
 
     // Render lecturer dashboard
-    getDashboard(req, res) {
-        // Pass the user object from the JWT token to the view
-        res.render('lecturer/dashboard', { user: req.user });
+    async getDashboard(req, res) {
+        try {
+            const lecturerId = req.session.user.id;
+            const submissions = await this.lecturerModel.getSubmissionsToGrade(lecturerId);
+            const performance = await this.lecturerModel.getClassPerformance(lecturerId);
+
+            res.render('lecturer/dashboard', {
+                user: req.session.user,
+                submissions,
+                performance
+            });
+        } catch (error) {
+            console.error('Error in lecturer dashboard:', error);
+            res.status(500).render('error', {
+                message: 'Error loading dashboard'
+            });
+        }
     }
 
     // Create new assignment

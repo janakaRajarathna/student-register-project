@@ -4,11 +4,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lecturer Dashboard - <%= user.name %>
+    <title>Lecturer Dashboard
     </title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* ... existing styles ... */
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+
+        .grading-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .grading-table th,
+        .grading-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .grading-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .grading-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .btn-grade {
+            background-color: #2196F3;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn-grade:hover {
+            background-color: #1976D2;
+        }
+
+        .no-submissions {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
         .logout-link {
             position: absolute;
             top: 1rem;
@@ -22,51 +103,121 @@
         .logout-link:hover {
             color: #c82333;
         }
+
+        .performance-section {
+            margin-top: 3rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
     </style>
 </head>
 
 <body>
     <!-- <%- include('../partials/header', { user }) %> -->
 
-        <a href="/auth/logout" class="logout-link">Logout</a>
+    <a href="/auth/logout" class="logout-link">Logout</a>
 
-        <div class="dashboard-container">
-            <div class="dashboard-header">
-                <h1>Lecturer Dashboard</h1>
-                <button onclick="location.href='/lecturer/create-assignment'" class="btn btn-primary">Create
-                    Assignment</button>
-            </div>
-
-            <div class="container">
-                <h2>Submissions to Grade</h2>
-                <table class="grading-table">
-                    <tr>
-                        <th>Student</th>
-                        <th>Assignment</th>
-                        <th>Submission Date</th>
-                        <th>Grade</th>
-                        <th>Action</th>
-                    </tr>
-                    <tr>
-                        <td>John Doe</td>
-                        <td>Math Assignment 1</td>
-                        <td>2023-08-15</td>
-                        <td>-</td>
-                        <td><button class="btn btn-primary">Grade Now</button></td>
-                    </tr>
-                </table>
-
-                <div style="margin-top: 40px;">
-                    <h2>Class Performance</h2>
-                    <canvas id="classChart" style="max-width: 800px; margin-top: 20px;"></canvas>
-                </div>
-            </div>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Lecturer Dashboard</h1>
+            <button onclick="location.href='/lecturer/create-assignment'" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create Assignment
+            </button>
         </div>
 
-        <%- include('../partials/footer') %>
+        <div class="container">
+            <h2>Submissions to Grade</h2>
+            <% if (submissions && submissions.length> 0) { %>
+                <table class="grading-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Assignment</th>
+                            <th>Submission Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% submissions.forEach(submission=> { %>
+                            <tr>
+                                <td>
+                                    <%= submission.student_name %>
+                                </td>
+                                <td>
+                                    <%= submission.assignment_title %>
+                                </td>
+                                <td>
+                                    <%= new Date(submission.submitted_at).toLocaleDateString() %>
+                                </td>
+                                <td><span class="status-badge status-<%= submission.status.toLowerCase() %>">
+                                        <%= submission.status %>
+                                    </span></td>
+                                <td>
+                                    <button class="btn-grade"
+                                        onclick="location.href='/lecturer/grade-submission/<%= submission.submission_id %>'">
+                                        <i class="fas fa-check-circle"></i> Grade Now
+                                    </button>
+                                </td>
+                            </tr>
+                            <% }); %>
+                    </tbody>
+                </table>
+                <% } else { %>
+                    <div class="no-submissions">
+                        <i class="fas fa-inbox fa-2x"></i>
+                        <p>No submissions to grade at the moment.</p>
+                    </div>
+                    <% } %>
 
-            <script src="/js/lecturer.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        <div class="performance-section">
+                            <h2>Class Performance</h2>
+                            <div class="chart-container">
+                                <canvas id="classChart"></canvas>
+                            </div>
+                        </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+
+        <script src="/js/lecturer.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            // Initialize class performance chart
+            const ctx = document.getElementById('classChart').getContext('2d');
+            const performanceData = <% - JSON.stringify(performance || []) %>;
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: performanceData.map(item => item.assignment_title),
+                    datasets: [{
+                        label: 'Average Marks',
+                        data: performanceData.map(item => item.average_marks),
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        </script>
 </body>
 
 </html>
