@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Assignment - <%= user.name %>
-    </title>
+    <title>Create Assignment</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .create-assignment-container {
             max-width: 800px;
@@ -92,15 +92,222 @@
             margin-top: 0.25rem;
             display: none;
         }
+
+        .assignments-table-container {
+            max-width: 800px;
+            margin: 3rem auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+
+        .assignments-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .assignments-table th,
+        .assignments-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .assignments-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .assignments-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .action-icons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .action-icons i {
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+
+        .edit-icon {
+            color: #2196F3;
+        }
+
+        .delete-icon {
+            color: #f44336;
+        }
+
+        .edit-icon:hover {
+            color: #1976D2;
+        }
+
+        .delete-icon:hover {
+            color: #d32f2f;
+        }
+
+        .no-assignments {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-cancel {
+            background-color: #f44336;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-cancel:hover {
+            background-color: #d32f2f;
+        }
+
+        .btn-update {
+            background-color: #2196F3;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-update:hover {
+            background-color: #1976D2;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-title {
+            margin: 0 0 1rem 0;
+            color: #333;
+        }
+
+        .modal-message {
+            margin-bottom: 1.5rem;
+            color: #666;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn-modal {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-modal-cancel {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-modal-cancel:hover {
+            background-color: #d0d0d0;
+        }
+
+        .btn-modal-delete {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-modal-delete:hover {
+            background-color: #d32f2f;
+        }
     </style>
 </head>
 
 <body>
     <div id="toast" class="toast"></div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal">
+            <h3 class="modal-title">Confirm Delete</h3>
+            <p class="modal-message">Are you sure you want to delete this assignment? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn-modal btn-modal-cancel" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn-modal btn-modal-delete" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <div class="create-assignment-container">
         <a href="/lecturer/dashboard" class="back-link">← Back to Dashboard</a>
-        <h1>Create New Assignment</h1>
+        <div class="form-header">
+            <h1 id="formTitle">Create New Assignment</h1>
+            <div id="formActions" class="form-actions hidden">
+                <button type="button" class="btn-cancel" onclick="cancelEdit()">Cancel</button>
+                <button type="button" class="btn-update" onclick="updateAssignment()">Update Assignment</button>
+            </div>
+        </div>
         <form id="createAssignmentForm" action="/lecturer/create-assignment" method="POST">
+            <input type="hidden" id="assignmentId" name="assignmentId">
             <div class="form-group">
                 <label for="title">Assignment Title</label>
                 <input type="text" id="title" name="title" required>
@@ -121,8 +328,34 @@
                 <input type="number" id="maxMarks" name="maxMarks" min="1" required>
                 <div id="maxMarksError" class="error-message"></div>
             </div>
-            <button type="submit" class="btn-submit">Create Assignment</button>
+            <button type="submit" class="btn-submit" id="submitButton">Create Assignment</button>
         </form>
+    </div>
+
+    <div class="assignments-table-container">
+        <h2>Existing Assignments</h2>
+        <div id="loadingSpinner" class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i> Loading assignments...
+        </div>
+        <div id="assignmentsTableWrapper">
+            <table class="assignments-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Deadline</th>
+                        <th>Max Marks</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="assignmentsTableBody">
+                    <!-- Assignments will be loaded here -->
+                </tbody>
+            </table>
+            <div id="noAssignments" class="no-assignments" style="display: none;">
+                No assignments found
+            </div>
+        </div>
     </div>
 
     <script>
@@ -190,6 +423,185 @@
             return isValid;
         }
 
+        // Function to format date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        // Function to format date for input field
+        function formatDateForInput(dateString) {
+            const date = new Date(dateString);
+            return date.toISOString().split('T')[0];
+        }
+
+        let assignmentToDelete = null;
+
+        // Function to show delete confirmation modal
+        function showDeleteModal(id) {
+            assignmentToDelete = id;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        // Function to close delete modal
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            assignmentToDelete = null;
+        }
+
+        // Function to confirm and execute delete
+        async function confirmDelete() {
+            if (!assignmentToDelete) return;
+
+            try {
+                const response = await fetch(`/lecturer/assignments/${assignmentToDelete}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Assignment deleted successfully', 'success');
+                    loadAssignments();
+                } else {
+                    showToast(data.message || 'Failed to delete assignment', 'error');
+                }
+            } catch (error) {
+                showToast('Error deleting assignment', 'error');
+            } finally {
+                closeDeleteModal();
+            }
+        }
+
+        // Function to load assignments
+        async function loadAssignments() {
+            const spinner = document.getElementById('loadingSpinner');
+            const tableBody = document.getElementById('assignmentsTableBody');
+            const noAssignments = document.getElementById('noAssignments');
+
+            spinner.classList.add('active');
+            tableBody.innerHTML = '';
+            noAssignments.style.display = 'none';
+
+            try {
+                const response = await fetch('/lecturer/assignments');
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.assignments.length === 0) {
+                        noAssignments.style.display = 'block';
+                    } else {
+                        data.assignments.forEach(assignment => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${assignment.title}</td>
+                                <td>${assignment.description}</td>
+                                <td>${formatDate(assignment.deadline)}</td>
+                                <td>${assignment.max_marks}</td>
+                                <td>
+                                    <div class="action-icons">
+                                        <i class="fas fa-edit edit-icon" onclick="editAssignment(${assignment.id})" title="Edit"></i>
+                                        <i class="fas fa-trash delete-icon" onclick="showDeleteModal(${assignment.id})" title="Delete"></i>
+                                    </div>
+                                </td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    }
+                } else {
+                    showToast('Failed to load assignments', 'error');
+                }
+            } catch (error) {
+                showToast('Error loading assignments', 'error');
+            } finally {
+                spinner.classList.remove('active');
+            }
+        }
+
+        // Function to load assignment data into form
+        async function editAssignment(id) {
+            try {
+                const response = await fetch(`/lecturer/assignments/${id}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const assignment = data.assignment;
+
+                    // Update form title and show update buttons
+                    document.getElementById('formTitle').textContent = 'Edit Assignment';
+                    document.getElementById('formActions').classList.remove('hidden');
+                    document.getElementById('submitButton').classList.add('hidden');
+
+                    // Fill form with assignment data
+                    document.getElementById('assignmentId').value = assignment.id;
+                    document.getElementById('title').value = assignment.title;
+                    document.getElementById('description').value = assignment.description;
+                    document.getElementById('deadline').value = formatDateForInput(assignment.deadline);
+                    document.getElementById('maxMarks').value = assignment.max_marks;
+
+                    // Scroll to form
+                    document.querySelector('.create-assignment-container').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                } else {
+                    showToast('Failed to load assignment data', 'error');
+                }
+            } catch (error) {
+                showToast('Error loading assignment data', 'error');
+            }
+        }
+
+        // Function to cancel edit
+        function cancelEdit() {
+            // Reset form
+            document.getElementById('createAssignmentForm').reset();
+            document.getElementById('assignmentId').value = '';
+
+            // Reset form title and buttons
+            document.getElementById('formTitle').textContent = 'Create New Assignment';
+            document.getElementById('formActions').classList.add('hidden');
+            document.getElementById('submitButton').classList.remove('hidden');
+        }
+
+        // Function to update assignment
+        async function updateAssignment() {
+            if (!validateForm()) {
+                return;
+            }
+
+            const formData = new FormData(document.getElementById('createAssignmentForm'));
+            const assignmentId = document.getElementById('assignmentId').value;
+            const updateButton = document.querySelector('.btn-update');
+
+            updateButton.disabled = true;
+            updateButton.textContent = 'Updating...';
+
+            try {
+                const response = await fetch(`/lecturer/assignments/${assignmentId}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Assignment updated successfully!', 'success');
+                    cancelEdit();
+                    loadAssignments();
+                } else {
+                    showToast(data.message || 'Failed to update assignment', 'error');
+                }
+            } catch (error) {
+                showToast('An error occurred. Please try again.', 'error');
+            } finally {
+                updateButton.disabled = false;
+                updateButton.textContent = 'Update Assignment';
+            }
+        }
+
+        // Load assignments when page loads
+        document.addEventListener('DOMContentLoaded', loadAssignments);
+
+        // Reload assignments after successful creation
         document.getElementById('createAssignmentForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
@@ -212,16 +624,14 @@
 
                 if (data.success) {
                     showToast('Assignment created successfully!', 'success');
-                    setTimeout(() => {
-                        window.location.href = '/lecturer/dashboard';
-                    }, 1500);
+                    this.reset();
+                    loadAssignments();
                 } else {
                     showToast(data.message || 'Failed to create assignment', 'error');
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Create Assignment';
                 }
             } catch (error) {
                 showToast('An error occurred. Please try again.', 'error');
+            } finally {
                 submitButton.disabled = false;
                 submitButton.textContent = 'Create Assignment';
             }
