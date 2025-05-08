@@ -1,6 +1,5 @@
 const Student = require('../models/Student');
 const path = require('path');
-const fs = require('fs').promises;
 
 class StudentController {
     constructor(db) {
@@ -73,26 +72,14 @@ class StudentController {
                 });
             }
 
-            // Create uploads directory if it doesn't exist
-            const uploadDir = path.join(__dirname, '../public/uploads');
-            try {
-                await fs.access(uploadDir);
-            } catch {
-                await fs.mkdir(uploadDir, { recursive: true });
-            }
+            // Get file data as buffer
+            const fileData = file.data;
 
-            // Generate unique filename
-            const fileName = `${Date.now()}_${studentId}_${file.name}`;
-            const uploadPath = path.join(uploadDir, fileName);
-
-            // Save file
-            await file.mv(uploadPath);
-
-            // Save submission to database
+            // Save submission to database with file data
             await this.studentModel.submitAssignment({
                 assignmentId,
                 studentId,
-                filePath: fileName,
+                fileData,
                 comments
             });
 
@@ -102,16 +89,6 @@ class StudentController {
             });
         } catch (error) {
             console.error('Error submitting assignment:', error);
-
-            // If there was an error and we saved the file, delete it
-            if (file && uploadPath) {
-                try {
-                    await fs.unlink(uploadPath);
-                } catch (unlinkError) {
-                    console.error('Error deleting uploaded file:', unlinkError);
-                }
-            }
-
             res.status(500).json({
                 success: false,
                 message: error.message || 'Error submitting assignment'

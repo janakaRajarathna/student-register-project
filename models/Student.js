@@ -45,7 +45,7 @@ class Student {
         }
     }
 
-    async submitAssignment({ assignmentId, studentId, filePath, comments }) {
+    async submitAssignment({ assignmentId, studentId, fileData, comments }) {
         try {
             // Check if submission already exists
             const [existingSubmission] = await this.db.execute(
@@ -74,12 +74,12 @@ class Student {
                 throw new Error('Assignment deadline has passed');
             }
 
-            // Insert new submission
+            // Insert new submission with file data as BLOB
             const [result] = await this.db.execute(
                 `INSERT INTO submissions 
                 (assignment_id, student_id, assignment_file, student_comment, status) 
                 VALUES (?, ?, ?, ?, 'PENDING')`,
-                [assignmentId, studentId, filePath, comments]
+                [assignmentId, studentId, fileData, comments]
             );
 
             return result.insertId;
