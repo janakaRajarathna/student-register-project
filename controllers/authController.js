@@ -15,7 +15,6 @@ class AuthController {
     async postLogin(req, res) {
         try {
             const { email, password } = req.body;
-            console.log('Login attempt for:', email);
 
             // Find user by email
             const user = await this.userModel.findByEmail(email);
@@ -37,7 +36,6 @@ class AuthController {
 
             // Generate JWT token
             const token = req.authMiddleware.generateToken(user);
-            console.log('Token generated for user:', user.id);
 
             // Set token in cookie with proper options
             res.cookie('token', token, {

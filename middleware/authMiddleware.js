@@ -12,17 +12,13 @@ class AuthMiddleware {
             email: user.email,
             role: user.role
         };
-        console.log('Generating token with payload:', payload);
-        console.log('secretKey:', this.secretKey);
         const token = jwt.sign(payload, this.secretKey, { expiresIn: '24h' });
-        console.log('Generated token:', token);
         return token;
     }
 
     // Verify JWT token
     verifyToken(req, res, next) {
         const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
-        console.log('Verifying token:', token);
 
         if (!token) {
             console.log('No token found');
@@ -31,11 +27,9 @@ class AuthMiddleware {
 
         try {
             const decoded = jwt.verify(token, this.secretKey);
-            console.log('Token decoded successfully:', decoded);
             req.user = decoded;
             next();
         } catch (error) {
-            console.error('Token verification failed:', error.message);
             res.status(401).json({ error: 'Invalid token.' });
         }
     }
