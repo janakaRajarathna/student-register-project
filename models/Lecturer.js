@@ -17,7 +17,8 @@ class Lecturer {
                     a.title as assignment_title,
                     a.deadline,
                     u.id as student_id,
-                    u.username as student_name
+                    u.username as student_name,
+                    s.assignment_file
                 FROM submissions s
                 JOIN assignments a ON s.assignment_id = a.id
                 JOIN users u ON s.student_id = u.id
@@ -52,6 +53,46 @@ class Lecturer {
             return performance;
         } catch (error) {
             console.error('Error in getClassPerformance:', error);
+            throw error;
+        }
+    }
+
+    async getSubmissionById(submissionId, lecturerId) {
+        try {
+            const [submissions] = await this.db.query(`
+                SELECT 
+                    s.*,
+                    a.title as assignment_title,
+                    u.username as student_name,
+                    s.assignment_file
+                FROM submissions s
+                JOIN assignments a ON s.assignment_id = a.id
+                JOIN users u ON s.student_id = u.id
+                WHERE s.id = ? AND a.created_by = ?
+            `, [submissionId, lecturerId]);
+
+            return submissions[0];
+        } catch (error) {
+            console.error('Error in getSubmissionById:', error);
+            throw error;
+        }
+    }
+
+    async submitGrade(submissionId, lecturerId, grade, feedback) {
+        try {
+            const [result] = await this.db.query(`
+                UPDATE submissions 
+                SET marks = ?,
+                    feedback = ?,
+                    marked_by = ?,
+                    marked_at = CURRENT_TIMESTAMP,
+                    status = 'GRADED'
+                WHERE id = ?
+            `, [grade, feedback, lecturerId, submissionId]);
+
+            return result.affectedRows > 0;
+        } catch (error) {
+            console.error('Error in submitGrade:', error);
             throw error;
         }
     }

@@ -36,4 +36,14 @@ router.delete('/assignments/:id', (req, res) => {
     req.lecturerController.deleteAssignment(req, res);
 });
 
+// Get submission preview
+router.get('/submission/:id/preview', (req, res) => {
+    req.lecturerController.getSubmissionPreview(req, res);
+});
+
+// Submit grade for a submission
+router.post('/submission/grade', (req, res) => {
+    req.lecturerController.submitGrade(req, res);
+});
+
 module.exports = router; 

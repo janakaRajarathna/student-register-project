@@ -1,4 +1,6 @@
 const Lecturer = require('../models/Lecturer');
+const path = require('path');
+const fs = require('fs').promises;
 
 class LecturerController {
     constructor(db) {
@@ -6,6 +8,7 @@ class LecturerController {
         this.Assignment = require('../models/Assignment');
         this.assignmentModel = new this.Assignment(db);
         this.lecturerModel = new Lecturer(db);
+        this.submissionsDir = path.join(__dirname, '../uploads/submissions');
     }
 
     // Render lecturer dashboard
@@ -175,6 +178,85 @@ class LecturerController {
             res.status(500).json({
                 success: false,
                 message: 'An error occurred while deleting the assignment'
+            });
+        }
+    }
+
+    // Get submission preview
+    async getSubmissionPreview(req, res) {
+        try {
+            const submissionId = req.params.id;
+            const lecturerId = req.session.user.id;
+
+            const submission = await this.lecturerModel.getSubmissionById(submissionId, lecturerId);
+
+            if (!submission) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Submission not found or you do not have permission to view it'
+                });
+            }
+
+            if (!submission.assignment_file) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No file content found for this submission'
+                });
+            }
+
+            // Convert the file content to base64 for preview
+            const base64Content = submission.assignment_file.toString('base64');
+
+            // Since we don't store file type, we'll determine it from the content
+            // For now, we'll assume it's a PDF if it starts with %PDF, otherwise treat as text
+            const fileType = submission.assignment_file.toString().startsWith('%PDF') ? 'pdf' : 'txt';
+
+            res.json({
+                success: true,
+                fileType: fileType,
+                fileContent: base64Content,
+                fileName: `submission_${submissionId}`
+            });
+        } catch (error) {
+            console.error('Error in getSubmissionPreview:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error retrieving file preview'
+            });
+        }
+    }
+
+    // Submit grade for a submission
+    async submitGrade(req, res) {
+        try {
+            const { submissionId, grade, feedback } = req.body;
+            const lecturerId = req.session.user.id;
+
+            if (!submissionId || !grade || !feedback) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Missing required fields'
+                });
+            }
+
+            const success = await this.lecturerModel.submitGrade(submissionId, lecturerId, grade, feedback);
+
+            if (success) {
+                res.json({
+                    success: true,
+                    message: 'Grade submitted successfully'
+                });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    message: 'Submission not found or you do not have permission to grade it'
+                });
+            }
+        } catch (error) {
+            console.error('Error in submitGrade:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error submitting grade'
             });
         }
     }
