@@ -157,6 +157,14 @@
             background: #dc3545;
             color: #fff;
         }
+
+        .assignments-grid {
+            margin-top: 0;
+        }
+
+        .assignments-grid.mt-3 {
+            margin-top: 1.5rem;
+        }
     </style>
 </head>
 
@@ -172,31 +180,89 @@
 
     <div class="container">
         <h2>Your Assignments</h2>
-        <div class="assignments-grid" id="assignmentsList">
-            <% if (assignments && assignments.length> 0) { %>
-                <% assignments.forEach(assignment=> { %>
-                    <div class="assignment-card" onclick="showSubmissionInfo('<%= assignment.submission_id || '' %>')">
-                        <h3>
-                            <%= assignment.title %>
-                        </h3>
-                        <p>Status:
-                            <% let status=(assignment.status || 'Not Submitted' ).toUpperCase(); %>
-                                <% let badgeClass='' ; if (status==='MARKED' ) badgeClass='status-badge-marked' ; else
-                                    if (status==='PENDING' ) badgeClass='status-badge-pending' ; else
-                                    badgeClass='status-badge-not-submitted' ; %>
-                                    <span class="status-badge <%= badgeClass %>">
-                                        <%= status %>
-                                    </span>
-                        </p>
-                        <p>Grade: <%= assignment.grade ? assignment.grade + '/100' : 'Not Graded' %>
-                        </p>
-                        <p>Deadline: <%= new Date(assignment.deadline).toLocaleDateString() %>
-                        </p>
-                    </div>
-                    <% }); %>
-                        <% } else { %>
-                            <p>No assignments found.</p>
-                            <% } %>
+        <!-- Tabs -->
+        <ul class="nav nav-tabs" id="assignmentTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button"
+                    role="tab" aria-controls="all" aria-selected="true">All</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="submitted-tab" data-bs-toggle="tab" data-bs-target="#submitted"
+                    type="button" role="tab" aria-controls="submitted" aria-selected="false">Submitted</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="notsubmitted-tab" data-bs-toggle="tab" data-bs-target="#notsubmitted"
+                    type="button" role="tab" aria-controls="notsubmitted" aria-selected="false">Not Submitted</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="assignmentTabsContent">
+            <!-- All Assignments -->
+            <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                <div class="assignments-grid mt-3" id="assignmentsListAll">
+                    <% assignments.forEach(assignment=> { %>
+                        <div class="assignment-card"
+                            onclick="<%= assignment.submission_id ? `showSubmissionInfo('${assignment.submission_id}')` : `showAssignmentInfoModal('${JSON.stringify(assignment)}')` %>">
+                            <h3>
+                                <%= assignment.title %>
+                            </h3>
+                            <p>Status:
+                                <% let status=(assignment.status || 'Not Submitted' ).toUpperCase(); %>
+                                    <% let badgeClass='' ; if (status==='MARKED' ) badgeClass='status-badge-marked' ;
+                                        else if (status==='PENDING' ) badgeClass='status-badge-pending' ; else
+                                        badgeClass='status-badge-not-submitted' ; %>
+                                        <span class="status-badge <%= badgeClass %>">
+                                            <%= status %>
+                                        </span>
+                            </p>
+                            <p>Grade: <%= assignment.grade ? assignment.grade + '/100' : 'Not Graded' %>
+                            </p>
+                            <p>Deadline: <%= new Date(assignment.deadline).toLocaleDateString() %>
+                            </p>
+                        </div>
+                        <% }); %>
+                </div>
+            </div>
+            <!-- Submitted Assignments -->
+            <div class="tab-pane fade" id="submitted" role="tabpanel" aria-labelledby="submitted-tab">
+                <div class="assignments-grid mt-3" id="assignmentsListSubmitted">
+                    <% assignments.filter(a=> a.submission_id).forEach(assignment=> { %>
+                        <div class="assignment-card" onclick="showSubmissionInfo('<%= assignment.submission_id %>')">
+                            <h3>
+                                <%= assignment.title %>
+                            </h3>
+                            <p>Status:
+                                <% let status=(assignment.status || 'Not Submitted' ).toUpperCase(); %>
+                                    <% let badgeClass='' ; if (status==='MARKED' ) badgeClass='status-badge-marked' ;
+                                        else if (status==='PENDING' ) badgeClass='status-badge-pending' ; else
+                                        badgeClass='status-badge-not-submitted' ; %>
+                                        <span class="status-badge <%= badgeClass %>">
+                                            <%= status %>
+                                        </span>
+                            </p>
+                            <p>Grade: <%= assignment.grade ? assignment.grade + '/100' : 'Not Graded' %>
+                            </p>
+                            <p>Deadline: <%= new Date(assignment.deadline).toLocaleDateString() %>
+                            </p>
+                        </div>
+                        <% }); %>
+                </div>
+            </div>
+            <!-- Not Submitted Assignments -->
+            <div class="tab-pane fade" id="notsubmitted" role="tabpanel" aria-labelledby="notsubmitted-tab">
+                <div class="assignments-grid mt-3" id="assignmentsListNotSubmitted">
+                    <% assignments.filter(a=> !a.submission_id).forEach(assignment=> { %>
+                        <div class="assignment-card"
+                            onclick="showAssignmentInfoModal('<%- JSON.stringify(assignment) %>')">
+                            <h3>
+                                <%= assignment.title %>
+                            </h3>
+                            <p>Status: <span class="status-badge status-badge-not-submitted">NOT SUBMITTED</span></p>
+                            <p>Deadline: <%= new Date(assignment.deadline).toLocaleDateString() %>
+                            </p>
+                        </div>
+                        <% }); %>
+                </div>
+            </div>
         </div>
 
         <div style="margin-top: 40px;">
@@ -249,6 +315,36 @@
                                 <textarea id="studentComment" readonly></textarea>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Info Modal (for not submitted) -->
+    <div class="modal fade" id="assignmentInfoModal" tabindex="-1" aria-labelledby="assignmentInfoModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignmentInfoModalLabel">Assignment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Title:</label>
+                        <input type="text" id="infoAssignmentTitle" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Description:</label>
+                        <textarea id="infoAssignmentDescription" readonly></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Deadline:</label>
+                        <input type="text" id="infoAssignmentDeadline" readonly>
                     </div>
                 </div>
                 <div class="modal-footer">

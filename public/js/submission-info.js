@@ -119,4 +119,19 @@ function showToast(message, type = 'info') {
     setTimeout(() => {
         toast.style.display = 'none';
     }, 3000);
+}
+
+function showAssignmentInfoModal(assignmentJson) {
+    let assignment;
+    try {
+        assignment = typeof assignmentJson === 'string' ? JSON.parse(assignmentJson) : assignmentJson;
+    } catch (e) {
+        showToast('Error loading assignment info', 'error');
+        return;
+    }
+    document.getElementById('infoAssignmentTitle').value = assignment.title || '';
+    document.getElementById('infoAssignmentDescription').value = assignment.description || '';
+    document.getElementById('infoAssignmentDeadline').value = assignment.deadline ? new Date(assignment.deadline).toLocaleString() : '';
+    const modal = new bootstrap.Modal(document.getElementById('assignmentInfoModal'));
+    modal.show();
 } 
