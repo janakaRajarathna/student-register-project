@@ -55,6 +55,7 @@ class StudentController {
             const assignmentId = req.body.assignmentId;
             const studentId = req.session.user.id;
             const comments = req.body.comments || '';
+            const fileType = file.mimetype || '';
 
             // Validate file size (10MB limit)
             if (file.size > 10 * 1024 * 1024) {
@@ -77,12 +78,13 @@ class StudentController {
             // Get file data as buffer
             const fileData = file.data;
 
-            // Save submission to database with file data
+            // Save submission to database with file data and file type
             await this.studentModel.submitAssignment({
                 assignmentId,
                 studentId,
                 fileData,
-                comments
+                comments,
+                fileType
             });
 
             res.json({

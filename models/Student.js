@@ -47,7 +47,7 @@ class Student {
         }
     }
 
-    async submitAssignment({ assignmentId, studentId, fileData, comments }) {
+    async submitAssignment({ assignmentId, studentId, fileData, comments, fileType }) {
         try {
             const [result] = await this.db.execute(`
                 INSERT INTO submissions (
@@ -56,9 +56,10 @@ class Student {
                     assignment_file,
                     student_comment,
                     status,
-                    submitted_at
-                ) VALUES (?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP)
-            `, [assignmentId, studentId, fileData, comments]);
+                    submitted_at,
+                    file_type
+                ) VALUES (?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP, ?)
+            `, [assignmentId, studentId, fileData, comments, fileType]);
 
             return result.insertId;
         } catch (error) {
