@@ -244,6 +244,26 @@
             display: none;
             z-index: 1001;
         }
+
+        .styled-dropdown {
+            padding: 0.5rem 2rem 0.5rem 1rem;
+            border: 1px solid #4CAF50;
+            border-radius: 4px;
+            background: #f8f9fa url('data:image/svg+xml;utf8,<svg fill="%234CAF50" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 0.75rem center/1.2em;
+            font-size: 1rem;
+            color: #333;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            min-width: 200px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .styled-dropdown:focus {
+            border-color: #2196F3;
+            outline: none;
+        }
     </style>
 </head>
 
@@ -350,8 +370,20 @@
                     </div>
                     <% } %>
 
-                        <div class="performance-section">
-                            <h2>Class Performance</h2>
+                        <div class="performance-section" style="position: relative;">
+                            <h2 style="display: inline-block;">Class Performance</h2>
+                            <select id="assignmentDropdown" class="styled-dropdown"
+                                style="position: absolute; right: 0; top: 10px; min-width: 200px;">
+                                <% if (assignments && assignments.length> 0) { %>
+                                    <% assignments.forEach(function(assignment) { %>
+                                        <option value="<%= assignment.id %>">
+                                            <%= assignment.title %>
+                                        </option>
+                                        <% }); %>
+                                            <% } else { %>
+                                                <option disabled selected>No assignments found</option>
+                                                <% } %>
+                            </select>
                             <div class="chart-container">
                                 <canvas id="classChart"></canvas>
                             </div>
@@ -365,18 +397,19 @@
         <script src="/js/grading.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-            // Initialize class performance chart
-            const ctx = document.getElementById('classChart').getContext('2d');
-            const performanceData = <% - JSON.stringify(performance || []) %>;
+            // Helper: get first assignmentId if available
+            const firstAssignmentId = (typeof assignments !== 'undefined' && assignments.length > 0) ? assignments[0].id : null;
 
-            new Chart(ctx, {
+            // Chart.js setup for grade distribution
+            const ctx = document.getElementById('classChart').getContext('2d');
+            let chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: performanceData.map(item => item.assignment_title),
+                    labels: ['A', 'B', 'C', 'D', 'F'],
                     datasets: [{
-                        label: 'Average Marks',
-                        data: performanceData.map(item => item.average_marks),
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        label: 'Grade Distribution',
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
                         borderColor: 'rgba(54, 162, 235, 1)',
                         borderWidth: 1
                     }]
@@ -386,89 +419,46 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 100
+                            precision: 0
                         }
                     }
                 }
             });
 
-            // Modal functionality
-            const modal = document.getElementById('gradingModal');
-            const closeBtn = document.querySelector('.close-modal');
-            let currentSubmissionId = null;
-
-            // Close modal when clicking the X
-            closeBtn.onclick = function () {
-                modal.style.display = "none";
-            }
-
-            // Close modal when clicking outside
-            window.onclick = function (event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            }
-
-            // Function to open modal with submission data
-            function openGradingModal(submissionId, studentName, assignmentTitle, submissionDate) {
-                currentSubmissionId = submissionId;
-                document.getElementById('studentName').value = studentName;
-                document.getElementById('assignmentTitle').value = assignmentTitle;
-                document.getElementById('submissionDate').value = new Date(submissionDate).toLocaleDateString();
-                document.getElementById('grade').value = '';
-                document.getElementById('feedback').value = '';
-                modal.style.display = "block";
-            }
-
-            // Function to submit grade
-            async function submitGrade() {
-                const grade = document.getElementById('grade').value;
-                const feedback = document.getElementById('feedback').value;
-
-                if (!grade || !feedback) {
-                    showToast('Please fill in all fields', 'error');
-                    return;
-                }
-
+            // Function to fetch and update grade distribution
+            async function updateGradeDistribution(assignmentId) {
+                if (!assignmentId) return;
                 try {
-                    const response = await fetch('/api/grade', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            submissionId: currentSubmissionId,
-                            grade: grade,
-                            feedback: feedback
-                        })
-                    });
-
-                    if (response.ok) {
-                        showToast('Grade submitted successfully!', 'success');
-                        modal.style.display = "none";
-                        // Reload the submissions section
-                        location.reload();
+                    const response = await fetch(`/lecturer/grade-distribution/${assignmentId}`);
+                    const result = await response.json();
+                    if (result.success && result.distribution) {
+                        const dist = result.distribution;
+                        chart.data.datasets[0].data = [dist.A || 0, dist.B || 0, dist.C || 0, dist.D || 0, dist.F || 0];
                     } else {
-                        showToast('Error submitting grade', 'error');
+                        chart.data.datasets[0].data = [0, 0, 0, 0, 0];
                     }
-                } catch (error) {
-                    console.error('Error:', error);
-                    showToast('Error submitting grade', 'error');
+                    chart.update();
+                } catch (err) {
+                    console.error('Failed to fetch grade distribution', err);
+                    chart.data.datasets[0].data = [0, 0, 0, 0, 0];
+                    chart.update();
                 }
             }
 
-            // Function to show toast notification
-            function showToast(message, type = 'success') {
-                const toast = document.getElementById('toast');
-                toast.textContent = message;
-                toast.style.backgroundColor = type === 'success' ? '#4CAF50' : '#f44336';
-                toast.style.display = 'block';
-
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                }, 3000);
+            // On page load, show first assignment's distribution
+            if (firstAssignmentId) {
+                updateGradeDistribution(firstAssignmentId);
             }
+
+            // Dropdown change event (AJAX)
+            const dropdown = document.getElementById('assignmentDropdown');
+            dropdown.addEventListener('change', function () {
+                updateGradeDistribution(this.value);
+            });
         </script>
+
+        <!-- DEBUG: Show performance data -->
+        <pre id="debug-performance" style="display:none;"><%- JSON.stringify(performance) %></pre>
 </body>
 
 </html>

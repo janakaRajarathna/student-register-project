@@ -86,13 +86,54 @@ class Lecturer {
                     feedback = ?,
                     marked_by = ?,
                     marked_at = CURRENT_TIMESTAMP,
-                    status = 'GRADED'
+                    status = 'MARKED'
                 WHERE id = ?
             `, [grade, feedback, lecturerId, submissionId]);
 
             return result.affectedRows > 0;
         } catch (error) {
             console.error('Error in submitGrade:', error);
+            throw error;
+        }
+    }
+
+    async getAssignmentPerformance(lecturerId, assignmentId) {
+        try {
+            const [rows] = await this.db.query(`
+                SELECT 
+                    a.id as assignment_id,
+                    a.title as assignment_title,
+                    COUNT(s.id) as total_submissions,
+                    AVG(s.marks) as average_marks,
+                    MIN(s.marks) as min_marks,
+                    MAX(s.marks) as max_marks
+                FROM assignments a
+                LEFT JOIN submissions s ON a.id = s.assignment_id
+                WHERE a.created_by = ? AND a.id = ? AND s.status = 'GRADED'
+                GROUP BY a.id, a.title
+            `, [lecturerId, assignmentId]);
+            return rows[0] || null;
+        } catch (error) {
+            console.error('Error in getAssignmentPerformance:', error);
+            throw error;
+        }
+    }
+
+    async getGradeDistribution(assignmentId) {
+        try {
+            const [rows] = await this.db.query(`
+                SELECT
+                    SUM(CASE WHEN marks >= 80 THEN 1 ELSE 0 END) AS A,
+                    SUM(CASE WHEN marks >= 70 AND marks < 80 THEN 1 ELSE 0 END) AS B,
+                    SUM(CASE WHEN marks >= 60 AND marks < 70 THEN 1 ELSE 0 END) AS C,
+                    SUM(CASE WHEN marks >= 50 AND marks < 60 THEN 1 ELSE 0 END) AS D,
+                    SUM(CASE WHEN marks < 50 THEN 1 ELSE 0 END) AS F
+                FROM submissions
+                WHERE assignment_id = ? AND status = 'MARKED'
+            `, [assignmentId]);
+            return rows[0] || { A: 0, B: 0, C: 0, D: 0, F: 0 };
+        } catch (error) {
+            console.error('Error in getGradeDistribution:', error);
             throw error;
         }
     }

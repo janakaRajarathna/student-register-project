@@ -46,4 +46,14 @@ router.post('/submission/grade', (req, res) => {
     req.lecturerController.submitGrade(req, res);
 });
 
+// Get performance for a single assignment
+router.get('/performance/:assignmentId', (req, res) => {
+    req.lecturerController.getAssignmentPerformance(req, res);
+});
+
+// Get grade distribution for a single assignment
+router.get('/grade-distribution/:assignmentId', (req, res) => {
+    req.lecturerController.getGradeDistribution(req, res);
+});
+
 module.exports = router; 

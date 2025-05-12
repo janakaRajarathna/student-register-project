@@ -16,12 +16,16 @@ class LecturerController {
         try {
             const lecturerId = req.session.user.id;
             const submissions = await this.lecturerModel.getSubmissionsToGrade(lecturerId);
-            const performance = await this.lecturerModel.getClassPerformance(lecturerId);
+            let performance = await this.lecturerModel.getClassPerformance(lecturerId);
+            if (!Array.isArray(performance)) performance = [];
+            const assignmentsResult = await this.assignmentModel.getByLecturer(lecturerId);
+            const assignments = assignmentsResult.success ? assignmentsResult.assignments : [];
 
             res.render('lecturer/dashboard', {
                 user: req.session.user,
                 submissions,
-                performance
+                performance,
+                assignments
             });
         } catch (error) {
             console.error('Error in lecturer dashboard:', error);
@@ -258,6 +262,31 @@ class LecturerController {
                 success: false,
                 message: 'Error submitting grade'
             });
+        }
+    }
+
+    // Get performance for a single assignment
+    async getAssignmentPerformance(req, res) {
+        try {
+            const lecturerId = req.session.user.id;
+            const assignmentId = req.params.assignmentId;
+            const performance = await this.lecturerModel.getAssignmentPerformance(lecturerId, assignmentId);
+            res.json({ success: true, performance });
+        } catch (error) {
+            console.error('Error fetching assignment performance:', error);
+            res.status(500).json({ success: false, message: 'Error fetching performance data' });
+        }
+    }
+
+    // Get grade distribution for a single assignment
+    async getGradeDistribution(req, res) {
+        try {
+            const assignmentId = req.params.assignmentId;
+            const distribution = await this.lecturerModel.getGradeDistribution(assignmentId);
+            res.json({ success: true, distribution });
+        } catch (error) {
+            console.error('Error fetching grade distribution:', error);
+            res.status(500).json({ success: false, message: 'Error fetching grade distribution' });
         }
     }
 }

@@ -281,29 +281,29 @@ app.get('/api/performance', async (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-  console.log('error middleware called >>>');
-  console.log('error:', err);
+// app.use((err, req, res, next) => {
+//   console.log('error middleware called >>>');
+//   console.log('error:', err);
 
-  // Ensure error object has required properties
-  const errorObj = {
-    status: err.status || 500,
-    message: err.message || 'Internal Server Error',
-    description: err.description || 'An unexpected error occurred',
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-  };
+//   // Ensure error object has required properties
+//   const errorObj = {
+//     status: err.status || 500,
+//     message: err.message || 'Internal Server Error',
+//     description: err.description || 'An unexpected error occurred',
+//     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+//   };
 
-  // If it's a database error, add more user-friendly message
-  if (err.code === 'ER_NO_SUCH_TABLE') {
-    errorObj.description = 'Database table not found. Please contact the administrator.';
-  }
+//   // If it's a database error, add more user-friendly message
+//   if (err.code === 'ER_NO_SUCH_TABLE') {
+//     errorObj.description = 'Database table not found. Please contact the administrator.';
+//   }
 
-  res.status(errorObj.status);
-  res.render('error', {
-    error: errorObj,
-    user: req.session.user || null // Pass user object if available
-  });
-});
+//   res.status(errorObj.status);
+//   res.render('error', {
+//     error: errorObj,
+//     user: req.session.user || null // Pass user object if available
+//   });
+// });
 
 // Start Server
 const PORT = process.env.PORT || 3000;
