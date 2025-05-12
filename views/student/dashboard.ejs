@@ -200,26 +200,24 @@
             <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
                 <div class="assignments-grid mt-3" id="assignmentsListAll">
                     <% assignments.forEach(assignment=> { %>
-                        <div class="assignment-card"
-                            onclick="<%= assignment.submission_id ? `showSubmissionInfo('${assignment.submission_id}')` : `showAssignmentInfoModal('${JSON.stringify(assignment)}')` %>">
-                            <h3>
-                                <%= assignment.title %>
-                            </h3>
-                            <p>Status:
-                                <% let status=(assignment.status || 'Not Submitted' ).toUpperCase(); %>
-                                    <% let badgeClass='' ; if (status==='MARKED' ) badgeClass='status-badge-marked' ;
-                                        else if (status==='PENDING' ) badgeClass='status-badge-pending' ; else
-                                        badgeClass='status-badge-not-submitted' ; %>
-                                        <span class="status-badge <%= badgeClass %>">
-                                            <%= status %>
-                                        </span>
-                            </p>
-                            <p>Grade: <%= assignment.grade ? assignment.grade + '/100' : 'Not Graded' %>
-                            </p>
-                            <p>Deadline: <%= new Date(assignment.deadline).toLocaleDateString() %>
-                            </p>
-                        </div>
-                        <% }); %>
+                        <% let status=(assignment.status || 'Not Submitted' ).toUpperCase(); let badgeClass='' ; if
+                            (status==='MARKED' ) badgeClass='status-badge-marked' ; else if (status==='PENDING' )
+                            badgeClass='status-badge-pending' ; else badgeClass='status-badge-not-submitted' ; let
+                            clickHandler=assignment.submission_id ? `showSubmissionInfo('${assignment.submission_id}')`
+                            : `showAssignmentInfoModal('${JSON.stringify(assignment).replace(/'/g, "&#39;" )}')`; %>
+                            <div class="assignment-card" onclick="<%= clickHandler %>">
+                                <h3>
+                                    <%= assignment.title %>
+                                </h3>
+                                <p>Status: <span class="status-badge <%= badgeClass %>">
+                                        <%= status %>
+                                    </span></p>
+                                <p>Grade: <%= assignment.grade ? assignment.grade + '/100' : 'Not Graded' %>
+                                </p>
+                                <p>Deadline: <%= new Date(assignment.deadline).toLocaleDateString() %>
+                                </p>
+                            </div>
+                            <% }); %>
                 </div>
             </div>
             <!-- Submitted Assignments -->
@@ -250,9 +248,11 @@
             <!-- Not Submitted Assignments -->
             <div class="tab-pane fade" id="notsubmitted" role="tabpanel" aria-labelledby="notsubmitted-tab">
                 <div class="assignments-grid mt-3" id="assignmentsListNotSubmitted">
-                    <% assignments.filter(a=> !a.submission_id).forEach(assignment=> { %>
-                        <div class="assignment-card"
-                            onclick="showAssignmentInfoModal('<%- JSON.stringify(assignment) %>')">
+                    <% assignments.filter(a=> !a.submission_id).forEach(assignment=> {
+                        let clickHandler =
+                        `showAssignmentInfoModal('${JSON.stringify(assignment).split("'").join("&#39;")}')`;
+                        %>
+                        <div class="assignment-card" onclick="<%= clickHandler %>">
                             <h3>
                                 <%= assignment.title %>
                             </h3>

@@ -134,4 +134,9 @@ function showAssignmentInfoModal(assignmentJson) {
     document.getElementById('infoAssignmentDeadline').value = assignment.deadline ? new Date(assignment.deadline).toLocaleString() : '';
     const modal = new bootstrap.Modal(document.getElementById('assignmentInfoModal'));
     modal.show();
+}
+
+function showAssignmentInfoModalFromCard(card) {
+    const assignmentJson = card.getAttribute('data-assignment');
+    showAssignmentInfoModal(assignmentJson);
 } 
