@@ -123,14 +123,17 @@ class StudentController {
             // Convert file content to base64 for preview
             const base64Content = submission.assignment_file.toString('base64');
 
-            // Determine file type from the file content or use a default
-            const fileType = submission.file_type || 'application/pdf';
-
             res.json({
                 success: true,
-                fileType: fileType,
-                content: base64Content,
-                fileName: submission.file_name || 'submission'
+                assignment_title: submission.assignment_title,
+                submission_date: submission.submitted_at,
+                status: submission.status,
+                student_comment: submission.student_comment,
+                grade: submission.marks,
+                feedback: submission.feedback,
+                file_content: base64Content,
+                file_type: submission.file_type || 'application/pdf',
+                file_name: submission.file_name || 'submission'
             });
         } catch (error) {
             console.error('Error in getSubmissionPreview:', error);

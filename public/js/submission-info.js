@@ -6,64 +6,102 @@ function showSubmissionInfo(submissionId) {
     }
 
     // Show loading state
-    const modal = document.getElementById('submissionInfoModal');
-    const previewContainer = document.getElementById('filePreview');
-    previewContainer.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
+    const filePreview = document.getElementById('filePreview');
+    filePreview.innerHTML = '<div class="text-center p-4"><div class="spinner-border" role="status"></div></div>';
 
     // Fetch submission details
     fetch(`/student/submission/${submissionId}/preview`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Display file preview based on type
-                if (data.fileType === 'application/pdf') {
-                    // For PDF files
-                    const pdfUrl = `data:application/pdf;base64,${data.content}`;
-                    previewContainer.innerHTML = `
-                        <iframe src="${pdfUrl}" 
-                                style="width: 100%; height: 500px; border: none;"
-                                title="PDF Preview">
-                        </iframe>`;
-                } else if (data.fileType.includes('word')) {
-                    // For Word documents
-                    previewContainer.innerHTML = `
-                        <div class="alert alert-info">
-                            <i class="fas fa-file-word me-2"></i>
-                            Word documents cannot be previewed directly.
-                            <a href="data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,${data.content}" 
-                               download="${data.fileName}"
-                               class="btn btn-primary btn-sm ms-2">
-                                <i class="fas fa-download me-1"></i> Download
-                            </a>
-                        </div>`;
+                // Update modal fields
+                document.getElementById('assignmentTitle').value = data.assignment_title;
+                document.getElementById('submissionDate').value = new Date(data.submission_date).toLocaleString();
+                document.getElementById('status').value = data.status;
+                // Set status badge
+                const statusBadge = document.getElementById('statusBadge');
+                let statusClass = '';
+                let statusText = (data.status || '').toUpperCase();
+                if (statusText === 'MARKED') {
+                    statusClass = 'status-badge-marked';
+                } else if (statusText === 'PENDING') {
+                    statusClass = 'status-badge-pending';
                 } else {
-                    // For text files
-                    const textContent = atob(data.content);
-                    previewContainer.innerHTML = `
-                        <pre class="bg-light p-3 rounded" style="max-height: 500px; overflow-y: auto;">
-                            ${textContent}
-                        </pre>`;
+                    statusClass = 'status-badge-not-submitted';
+                    statusText = statusText || 'NOT SUBMITTED';
                 }
+                statusBadge.className = `status-badge ${statusClass}`;
+                statusBadge.textContent = statusText;
+                document.getElementById('studentComment').value = data.student_comment || 'No comments provided';
+
+                // Show/hide grade and feedback sections
+                const gradeSection = document.getElementById('gradeSection');
+                const feedbackSection = document.getElementById('feedbackSection');
+
+                if (data.grade) {
+                    gradeSection.style.display = 'block';
+                    document.getElementById('grade').value = data.grade;
+                } else {
+                    gradeSection.style.display = 'none';
+                }
+
+                if (data.feedback) {
+                    feedbackSection.style.display = 'block';
+                    document.getElementById('feedback').value = data.feedback;
+                } else {
+                    feedbackSection.style.display = 'none';
+                }
+
+                // Handle file preview based on file type
+                if (data.file_content) {
+                    const base64Content = data.file_content;
+                    const fileType = data.file_type.toLowerCase();
+
+                    if (fileType === 'application/pdf') {
+                        // For PDF files
+                        filePreview.innerHTML = `<iframe src="data:application/pdf;base64,${base64Content}" type="application/pdf"></iframe>`;
+                    } else if (fileType.includes('word') || fileType.includes('docx')) {
+                        // For Word documents
+                        filePreview.innerHTML = `
+                            <div class="text-center p-4">
+                                <p>Word documents cannot be previewed directly.</p>
+                                <a href="data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,${base64Content}" 
+                                   download="${data.file_name}"
+                                   class="btn btn-primary">
+                                    Download Document
+                                </a>
+                            </div>`;
+                    } else if (fileType === 'text/plain') {
+                        // For text files
+                        const textContent = atob(base64Content);
+                        filePreview.innerHTML = `<pre class="p-3">${textContent}</pre>`;
+                    } else {
+                        // For other file types
+                        filePreview.innerHTML = `
+                            <div class="text-center p-4">
+                                <p>Preview not available for this file type.</p>
+                                <a href="data:${fileType};base64,${base64Content}" 
+                                   download="${data.file_name}"
+                                   class="btn btn-primary">
+                                    Download File
+                                </a>
+                            </div>`;
+                    }
+                } else {
+                    filePreview.innerHTML = '<div class="text-center p-4">No file content available</div>';
+                }
+
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('submissionInfoModal'));
+                modal.show();
             } else {
-                previewContainer.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        ${data.message}
-                    </div>`;
+                showToast(data.message || 'Error loading submission details', 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            previewContainer.innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    Error loading file preview
-                </div>`;
+            showToast('Error loading submission details', 'error');
         });
-
-    // Show the modal
-    const modalInstance = new bootstrap.Modal(modal);
-    modalInstance.show();
 }
 
 // Function to show submit assignment page
@@ -72,10 +110,10 @@ function showSubmitAssignment() {
 }
 
 // Function to show toast notification
-function showToast(message, type = 'success') {
+function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
+    toast.className = `toast ${type}`;
     toast.textContent = message;
-    toast.style.backgroundColor = type === 'success' ? '#4CAF50' : '#f44336';
     toast.style.display = 'block';
 
     setTimeout(() => {
