@@ -11,6 +11,11 @@ router.get('/submit-assignment', (req, res) => {
     req.studentController.getSubmitAssignment(req, res);
 });
 
+// Submission preview route
+router.get('/submission/:id/preview', (req, res) => {
+    req.studentController.getSubmissionPreview(req, res);
+});
+
 router.post('/submit-assignment', (req, res) => {
     req.studentController.submitAssignment(req, res);
 });

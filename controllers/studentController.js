@@ -10,16 +10,18 @@ class StudentController {
         try {
             const studentId = req.session.user.id;
             const assignments = await this.studentModel.getAssignments(studentId);
-            const performanceData = await this.studentModel.getPerformanceData(studentId);
+            const performance = await this.studentModel.getPerformanceData(studentId);
 
             res.render('student/dashboard', {
                 assignments,
-                performanceData
+                performance,
+                user: req.session.user
             });
         } catch (error) {
-            console.error('Error in student dashboard:', error);
+            console.error('Error in getDashboard:', error);
             res.status(500).render('error', {
-                message: 'Error loading dashboard'
+                message: 'Error loading dashboard',
+                error: error
             });
         }
     }
@@ -92,6 +94,49 @@ class StudentController {
             res.status(500).json({
                 success: false,
                 message: error.message || 'Error submitting assignment'
+            });
+        }
+    }
+
+    // Get submission preview
+    async getSubmissionPreview(req, res) {
+        try {
+            const submissionId = req.params.id;
+            const studentId = req.session.user.id;
+
+            const submission = await this.studentModel.getSubmissionById(submissionId, studentId);
+
+            if (!submission) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Submission not found'
+                });
+            }
+
+            if (!submission.assignment_file) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No file found for this submission'
+                });
+            }
+
+            // Convert file content to base64 for preview
+            const base64Content = submission.assignment_file.toString('base64');
+
+            // Determine file type from the file content or use a default
+            const fileType = submission.file_type || 'application/pdf';
+
+            res.json({
+                success: true,
+                fileType: fileType,
+                content: base64Content,
+                fileName: submission.file_name || 'submission'
+            });
+        } catch (error) {
+            console.error('Error in getSubmissionPreview:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error retrieving submission preview'
             });
         }
     }

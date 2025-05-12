@@ -11,11 +11,14 @@ class Student {
                     a.title,
                     a.description,
                     a.deadline,
+                    s.id as submission_id,
                     s.status,
-                    g.grade
+                    s.marks as grade,
+                    s.feedback,
+                    s.student_comment,
+                    s.submitted_at
                 FROM assignments a
                 LEFT JOIN submissions s ON a.id = s.assignment_id AND s.student_id = ?
-                LEFT JOIN grades g ON s.id = g.submission_id
                 ORDER BY a.deadline ASC
             `, [studentId]);
             return assignments;
@@ -30,13 +33,12 @@ class Student {
             const [performance] = await this.db.execute(`
                 SELECT 
                     a.title,
-                    g.grade,
-                    g.feedback
-                FROM grades g
-                JOIN submissions s ON g.submission_id = s.id
+                    s.marks as grade,
+                    s.feedback
+                FROM submissions s
                 JOIN assignments a ON s.assignment_id = a.id
-                WHERE s.student_id = ?
-                ORDER BY g.created_at DESC
+                WHERE s.student_id = ? AND s.status = 'GRADED'
+                ORDER BY s.marked_at DESC
             `, [studentId]);
             return performance;
         } catch (error) {
@@ -47,44 +49,38 @@ class Student {
 
     async submitAssignment({ assignmentId, studentId, fileData, comments }) {
         try {
-            // Check if submission already exists
-            const [existingSubmission] = await this.db.execute(
-                'SELECT id FROM submissions WHERE assignment_id = ? AND student_id = ?',
-                [assignmentId, studentId]
-            );
-
-            if (existingSubmission.length > 0) {
-                throw new Error('You have already submitted this assignment');
-            }
-
-            // Check if assignment deadline has passed
-            const [assignment] = await this.db.execute(
-                'SELECT deadline FROM assignments WHERE id = ?',
-                [assignmentId]
-            );
-
-            if (!assignment.length) {
-                throw new Error('Assignment not found');
-            }
-
-            const deadline = new Date(assignment[0].deadline);
-            const now = new Date();
-
-            if (now > deadline) {
-                throw new Error('Assignment deadline has passed');
-            }
-
-            // Insert new submission with file data as BLOB
-            const [result] = await this.db.execute(
-                `INSERT INTO submissions 
-                (assignment_id, student_id, assignment_file, student_comment, status) 
-                VALUES (?, ?, ?, ?, 'PENDING')`,
-                [assignmentId, studentId, fileData, comments]
-            );
+            const [result] = await this.db.execute(`
+                INSERT INTO submissions (
+                    assignment_id, 
+                    student_id, 
+                    assignment_file,
+                    student_comment,
+                    status,
+                    submitted_at
+                ) VALUES (?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP)
+            `, [assignmentId, studentId, fileData, comments]);
 
             return result.insertId;
         } catch (error) {
             console.error('Error submitting assignment:', error);
+            throw error;
+        }
+    }
+
+    async getSubmissionById(submissionId, studentId) {
+        try {
+            const [submissions] = await this.db.execute(`
+                SELECT 
+                    s.*,
+                    a.title as assignment_title
+                FROM submissions s
+                JOIN assignments a ON s.assignment_id = a.id
+                WHERE s.id = ? AND s.student_id = ?
+            `, [submissionId, studentId]);
+
+            return submissions[0];
+        } catch (error) {
+            console.error('Error in getSubmissionById:', error);
             throw error;
         }
     }
