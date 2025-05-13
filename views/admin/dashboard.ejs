@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3>Admin Panel</h3>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/admin/dashboard" class="active">Dashboard</a></li>
+                <li><a href="/admin/users">Manage Users</a></li>
+                <li><a href="/admin/subjects">Manage Subjects</a></li>
+                <li><a href="/admin/assignments">All Assignments</a></li>
+                <li><a href="/admin/reports">Reports</a></li>
+                <li><a href="/auth/logout">Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Admin Dashboard</h1>
+                <div class="user-info">
+                    Welcome, <%= user.name %>
+                </div>
+            </header>
+
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <p class="stat-number">
+                        <%= stats.totalUsers %>
+                    </p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Lecturers</h3>
+                    <p class="stat-number">
+                        <%= stats.totalLecturers %>
+                    </p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Students</h3>
+                    <p class="stat-number">
+                        <%= stats.totalStudents %>
+                    </p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Assignments</h3>
+                    <p class="stat-number">
+                        <%= stats.totalAssignments %>
+                    </p>
+                </div>
+            </div>
+
+            <div class="dashboard-sections">
+                <section class="recent-activity">
+                    <h2>Recent Activity</h2>
+                    <div class="activity-list">
+                        <% if (recentActivity && recentActivity.length> 0) { %>
+                            <% recentActivity.forEach(activity=> { %>
+                                <div class="activity-item">
+                                    <span class="activity-time">
+                                        <%= activity.timestamp %>
+                                    </span>
+                                    <span class="activity-description">
+                                        <%= activity.description %>
+                                    </span>
+                                </div>
+                                <% }); %>
+                                    <% } else { %>
+                                        <p>No recent activity</p>
+                                        <% } %>
+                    </div>
+                </section>
+
+                <section class="quick-actions">
+                    <h2>Quick Actions</h2>
+                    <div class="action-buttons">
+                        <a href="/admin/users/new" class="btn btn-primary">Add New User</a>
+                        <a href="/admin/subjects/new" class="btn btn-primary">Add New Subject</a>
+                        <a href="/admin/reports/generate" class="btn btn-primary">Generate Report</a>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+
+</html>
