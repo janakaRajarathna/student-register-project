@@ -22,10 +22,11 @@ class User {
         try {
             const { name, email, password, role } = userData;
             const hashedPassword = await bcrypt.hash(password, 10);
+            const username = email;
 
             const [result] = await this.db.execute(
-                'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-                [name, email, hashedPassword, role]
+                'INSERT INTO users (username, full_name, email, password, role) VALUES (?, ?, ?, ?, ?)',
+                [username, name, email, hashedPassword, role]
             );
 
             return result.insertId;
