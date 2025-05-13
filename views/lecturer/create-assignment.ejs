@@ -328,6 +328,13 @@
                 <input type="number" id="maxMarks" name="maxMarks" min="1" required>
                 <div id="maxMarksError" class="error-message"></div>
             </div>
+            <div class="form-group">
+                <label for="subjectId">Subject</label>
+                <select id="subjectId" name="subjectId" required>
+                    <option value="">Select a subject</option>
+                </select>
+                <div id="subjectIdError" class="error-message"></div>
+            </div>
             <button type="submit" class="btn-submit" id="submitButton">Create Assignment</button>
         </form>
     </div>
@@ -392,6 +399,7 @@
             const description = document.getElementById('description').value.trim();
             const deadline = document.getElementById('deadline').value;
             const maxMarks = document.getElementById('maxMarks').value;
+            const subjectId = document.getElementById('subjectId').value;
 
             if (title.length < 3) {
                 showError('title', 'Title must be at least 3 characters long');
@@ -417,6 +425,11 @@
 
             if (!maxMarks || maxMarks < 1) {
                 showError('maxMarks', 'Maximum marks must be at least 1');
+                isValid = false;
+            }
+
+            if (!subjectId) {
+                showError('subjectId', 'Please select a subject');
                 isValid = false;
             }
 
@@ -537,6 +550,7 @@
                     document.getElementById('description').value = assignment.description;
                     document.getElementById('deadline').value = formatDateForInput(assignment.deadline);
                     document.getElementById('maxMarks').value = assignment.max_marks;
+                    document.getElementById('subjectId').value = assignment.subject_id;
 
                     // Scroll to form
                     document.querySelector('.create-assignment-container').scrollIntoView({
@@ -598,8 +612,31 @@
             }
         }
 
-        // Load assignments when page loads
-        document.addEventListener('DOMContentLoaded', loadAssignments);
+        // Load subjects when page loads
+        async function loadSubjects() {
+            try {
+                const response = await fetch('/lecturer/subjects');
+                const data = await response.json();
+
+                if (data.success) {
+                    const subjectSelect = document.getElementById('subjectId');
+                    subjectSelect.innerHTML = '<option value="">Select a subject</option>' +
+                        data.subjects.map(subject =>
+                            `<option value="${subject.id}">${subject.name}</option>`
+                        ).join('');
+                } else {
+                    showToast('Failed to load subjects', 'error');
+                }
+            } catch (error) {
+                showToast('Error loading subjects', 'error');
+            }
+        }
+
+        // Load subjects when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSubjects();
+            loadAssignments();
+        });
 
         // Reload assignments after successful creation
         document.getElementById('createAssignmentForm').addEventListener('submit', async function (e) {

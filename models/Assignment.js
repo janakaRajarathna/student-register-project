@@ -5,20 +5,34 @@ class Assignment {
 
     async create(assignmentData) {
         try {
-            const { title, description, deadline, maxMarks, createdBy } = assignmentData;
+            const { title, description, deadline, maxMarks, createdBy, subjectId } = assignmentData;
 
-            const query = `
-                INSERT INTO assignments (title, description, deadline, max_marks, created_by, created_at)
-                VALUES (?, ?, ?, ?, ?, NOW())
-            `;
-
-            const [result] = await this.db.execute(query, [
+            // Log the values being passed
+            console.log('Assignment creation values:', {
                 title,
                 description,
                 deadline,
                 maxMarks,
-                createdBy
-            ]);
+                createdBy,
+                subjectId
+            });
+
+            const query = `
+                INSERT INTO assignments (title, description, deadline, max_marks, created_by, subject_id, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, NOW())
+            `;
+
+            // Log the query parameters array
+            const queryParams = [
+                title,
+                description,
+                deadline,
+                maxMarks,
+                createdBy,
+                subjectId
+            ];
+
+            const [result] = await this.db.execute(query, queryParams);
 
             return {
                 success: true,
@@ -26,6 +40,12 @@ class Assignment {
             };
         } catch (error) {
             console.error('Error creating assignment:', error);
+            // Log the full error details
+            console.error('Full error details:', {
+                message: error.message,
+                stack: error.stack,
+                assignmentData
+            });
             return {
                 success: false,
                 message: 'Failed to create assignment'
@@ -100,14 +120,14 @@ class Assignment {
                 };
             }
 
-            const { title, description, deadline, maxMarks } = assignmentData;
+            const { title, description, deadline, maxMarks, subjectId } = assignmentData;
 
             // Update the assignment
             await this.db.execute(
                 `UPDATE assignments 
-                SET title = ?, description = ?, deadline = ?, max_marks = ?
+                SET title = ?, description = ?, deadline = ?, max_marks = ?, subject_id = ?
                 WHERE id = ?`,
-                [title, description, deadline, maxMarks, assignmentId]
+                [title, description, deadline, maxMarks, subjectId, assignmentId]
             );
 
             return {

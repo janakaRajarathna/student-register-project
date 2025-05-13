@@ -38,7 +38,7 @@ class LecturerController {
     // Create new assignment
     async createAssignment(req, res) {
         try {
-            const { title, description, deadline, maxMarks } = req.body;
+            const { title, description, deadline, maxMarks, subjectId } = req.body;
             const createdBy = req.user.id;
 
             const result = await this.assignmentModel.create({
@@ -46,7 +46,8 @@ class LecturerController {
                 description,
                 deadline,
                 maxMarks,
-                createdBy
+                createdBy,
+                subjectId
             });
 
             if (result.success) {
@@ -63,6 +64,13 @@ class LecturerController {
             }
         } catch (error) {
             console.error('Error in createAssignment:', error);
+            // Log the full error details
+            console.error('Full error details:', {
+                message: error.message,
+                stack: error.stack,
+                body: req.body,
+                user: req.user
+            });
             res.status(500).json({
                 success: false,
                 message: 'An error occurred while creating the assignment'
@@ -129,13 +137,14 @@ class LecturerController {
         try {
             const assignmentId = req.params.id;
             const createdBy = req.user.id;
-            const { title, description, deadline, maxMarks } = req.body;
+            const { title, description, deadline, maxMarks, subjectId } = req.body;
 
             const result = await this.assignmentModel.update(assignmentId, createdBy, {
                 title,
                 description,
                 deadline,
-                maxMarks
+                maxMarks,
+                subjectId
             });
 
             if (result.success) {
@@ -287,6 +296,30 @@ class LecturerController {
         } catch (error) {
             console.error('Error fetching grade distribution:', error);
             res.status(500).json({ success: false, message: 'Error fetching grade distribution' });
+        }
+    }
+
+    // Get subjects for the logged-in lecturer
+    async getSubjects(req, res) {
+        try {
+            const lecturerId = req.user.id;
+            const [subjects] = await this.db.execute(`
+                SELECT id, name 
+                FROM subjects 
+                WHERE lecturer_id = ?
+                ORDER BY name
+            `, [lecturerId]);
+
+            res.json({
+                success: true,
+                subjects
+            });
+        } catch (error) {
+            console.error('Error in getSubjects:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error fetching subjects'
+            });
         }
     }
 }

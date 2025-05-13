@@ -56,4 +56,9 @@ router.get('/grade-distribution/:assignmentId', (req, res) => {
     req.lecturerController.getGradeDistribution(req, res);
 });
 
+// Get subjects for the logged-in lecturer
+router.get('/subjects', (req, res) => {
+    req.lecturerController.getSubjects(req, res);
+});
+
 module.exports = router; 

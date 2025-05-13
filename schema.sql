@@ -20,14 +20,25 @@ CREATE TABLE IF NOT EXISTS subjects (
 );
 
 -- Assignments Table
-CREATE TABLE IF NOT EXISTS assignments (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    deadline DATE,
-    lecturer_id INT,
-    FOREIGN KEY (lecturer_id) REFERENCES users(id)
+CREATE TABLE `assignments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `due_date` datetime NOT NULL,
+  `subject_id` int(11) DEFAULT NULL,
+  `max_marks` int(11) NOT NULL,
+  `created_by` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `deadline` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_assignments_created_by` (`created_by`),
+  KEY `assignments_ibfk_2` (`subject_id`),
+  CONSTRAINT `assignments_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`),
+  CONSTRAINT `assignments_ibfk_2` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`)
 );
+
+
 
 -- Submissions Table
  CREATE TABLE `submissions` (
@@ -46,20 +57,11 @@ CREATE TABLE IF NOT EXISTS assignments (
   KEY `idx_submissions_assignment_id` (`assignment_id`),
   KEY `idx_submissions_student_id` (`student_id`),
   KEY `idx_submissions_marked_by` (`marked_by`),
-  CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`assignment_id`) REFERENCES `assignments` (`id`),
-  CONSTRAINT `submissions_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`),
-  CONSTRAINT `submissions_ibfk_3` FOREIGN KEY (`marked_by`) REFERENCES `users` (`id`)
+  CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`assignment_id`) REFERENCES `assignments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `submissions_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `submissions_ibfk_3` FOREIGN KEY (`marked_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
 );
 
--- Grades Table
-CREATE TABLE IF NOT EXISTS grades (
-    submission_id INT PRIMARY KEY,
-    grade DECIMAL(5,2) CHECK (grade BETWEEN 0 AND 100),
-    feedback TEXT,
-    graded_by INT,
-    FOREIGN KEY (submission_id) REFERENCES submissions(id),
-    FOREIGN KEY (graded_by) REFERENCES users(id)
-);
 
 -- Sample Data (Optional)
 INSERT INTO users (name, email, password, role) VALUES
