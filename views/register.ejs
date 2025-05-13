@@ -14,16 +14,10 @@
       <input type="email" name="email" placeholder="Email" required>
       <input type="password" name="password" placeholder="Password" required>
 
-      <div class="radio-group">
-        <label class="radio-option">
-          <input type="radio" name="role" value="student" checked>
-          <span class="radio-label">Student</span>
-        </label>
-        <label class="radio-option">
-          <input type="radio" name="role" value="lecturer">
-          <span class="radio-label">Lecturer</span>
-        </label>
-      </div>
+      <select name="role" class="form-select" required>
+        <option value="student" selected>Student</option>
+        <option value="lecturer">Lecturer</option>
+      </select>
 
       <button type="submit" class="btn btn-primary">Register</button>
     </form>

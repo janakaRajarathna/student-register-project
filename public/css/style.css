@@ -35,6 +35,17 @@
     border-radius: 5px;
   }
   
+  .auth-form select, .form-select {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    background: white;
+    appearance: none;
+  }
+  
   .btn {
     padding: 12px 25px;
     border: none;
