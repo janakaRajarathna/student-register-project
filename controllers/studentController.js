@@ -12,7 +12,7 @@ class StudentController {
             const assignments = await this.studentModel.getAssignments(studentId);
             const performance = await this.studentModel.getPerformanceData(studentId);
 
-            console.log('Performance:', performance);
+
 
             res.render('student/dashboard', {
                 assignments,

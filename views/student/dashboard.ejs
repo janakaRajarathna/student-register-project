@@ -276,7 +276,11 @@
 
         <div style="margin-top: 40px;">
             <h2>Performance Chart</h2>
-            <canvas id="performanceChart" style="max-width: 600px; margin-top: 20px;"></canvas>
+            <div style="max-width: 600px; margin-top: 20px;">
+                <label for="subjectFilter"><strong>Filter by Subject:</strong></label>
+                <select id="subjectFilter" style="margin-left: 10px; margin-bottom: 10px;"></select>
+                <canvas id="performanceChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -371,14 +375,41 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let performanceChartInstance = null;
+        let allPerformance = [];
+        let allSubjects = [];
+
         async function loadPerformanceChart() {
             const response = await fetch('/student/performance');
             const result = await response.json();
             if (!result.success) return;
 
-            const performance = result.performance;
-            const labels = performance.map(item => item.title);
-            const data = performance.map(item => item.grade);
+            allPerformance = result.performance;
+            console.log(allPerformance);
+            // Get unique subjects
+            allSubjects = Array.from(
+                new Map(
+                    allPerformance.map(item => [item.subject_id, { id: item.subject_id, name: item.subject_name }])
+                ).values()
+            );
+
+            // Populate dropdown
+            const subjectFilter = document.getElementById('subjectFilter');
+            subjectFilter.innerHTML = '<option value="all">All Subjects</option>' +
+                allSubjects.map(sub => `<option value="${sub.id}">${sub.name || 'No Subject'}</option>`).join('');
+
+            subjectFilter.addEventListener('change', renderChart);
+            renderChart();
+        }
+
+        function renderChart() {
+            const subjectFilter = document.getElementById('subjectFilter');
+            const selectedSubject = subjectFilter.value;
+            let filtered = allPerformance;
+            if (selectedSubject !== 'all') {
+                filtered = allPerformance.filter(item => String(item.subject_id) === selectedSubject);
+            }
+            const labels = filtered.map(item => item.title);
+            const data = filtered.map(item => item.grade);
 
             const ctx = document.getElementById('performanceChart').getContext('2d');
             if (performanceChartInstance) {

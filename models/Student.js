@@ -36,11 +36,14 @@ class Student {
                 SELECT 
                     a.title,
                     s.marks as grade,
-                    s.feedback
+                    s.feedback,
+                    a.subject_id,
+                    sub.name as subject_name
                 FROM submissions s
                 JOIN assignments a ON s.assignment_id = a.id
+                LEFT JOIN subjects sub ON a.subject_id = sub.id
                 WHERE s.student_id = ? AND s.status = 'MARKED'
-                ORDER BY s.marked_at DESC
+                ORDER BY a.due_date ASC
             `, [studentId]);
             return performance;
         } catch (error) {
