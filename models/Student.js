@@ -43,7 +43,7 @@ class Student {
                 JOIN assignments a ON s.assignment_id = a.id
                 LEFT JOIN subjects sub ON a.subject_id = sub.id
                 WHERE s.student_id = ? AND s.status = 'MARKED'
-                ORDER BY a.due_date ASC
+                ORDER BY a.deadline ASC
             `, [studentId]);
             return performance;
         } catch (error) {
