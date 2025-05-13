@@ -8,7 +8,7 @@ class StudentController {
 
     async getDashboard(req, res) {
         try {
-            const studentId = req.session.user.id;
+            const studentId = req.session.user?req.session.user.id:req.user.id;
             const assignments = await this.studentModel.getAssignments(studentId);
             const performance = await this.studentModel.getPerformanceData(studentId);
 
@@ -30,7 +30,7 @@ class StudentController {
 
     async getSubmitAssignment(req, res) {
         try {
-            const studentId = req.session.user.id;
+            const studentId = req.session.user?req.session.user.id:req.user.id;
             const assignments = await this.studentModel.getAssignments(studentId);
 
             res.render('student/submit-assignment', {
@@ -55,7 +55,7 @@ class StudentController {
 
             const file = req.files.file;
             const assignmentId = req.body.assignmentId;
-            const studentId = req.session.user.id;
+            const studentId = req.session.user?req.session.user.id:req.user.id;
             const comments = req.body.comments || '';
             const fileType = file.mimetype || '';
 
@@ -106,7 +106,7 @@ class StudentController {
     async getSubmissionPreview(req, res) {
         try {
             const submissionId = req.params.id;
-            const studentId = req.session.user.id;
+            const studentId = req.session.user?req.session.user.id:req.user.id;
 
             const submission = await this.studentModel.getSubmissionById(submissionId, studentId);
 
@@ -151,7 +151,7 @@ class StudentController {
     // Get performance data as JSON for AJAX
     async getPerformanceData(req, res) {
         try {
-            const studentId = req.session.user.id;
+            const studentId = req.session.user?req.session.user.id:req.user.id;
             const performance = await this.studentModel.getPerformanceData(studentId);
             res.json({ success: true, performance });
         } catch (error) {
