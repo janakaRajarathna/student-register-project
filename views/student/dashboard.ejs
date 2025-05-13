@@ -209,6 +209,9 @@
                                 <h3>
                                     <%= assignment.title %>
                                 </h3>
+                                <p>Subject: <strong>
+                                        <%= assignment.subject_name || 'N/A' %>
+                                    </strong></p>
                                 <p>Status: <span class="status-badge <%= badgeClass %>">
                                         <%= status %>
                                     </span></p>
@@ -228,6 +231,9 @@
                             <h3>
                                 <%= assignment.title %>
                             </h3>
+                            <p>Subject: <strong>
+                                    <%= assignment.subject_name || 'N/A' %>
+                                </strong></p>
                             <p>Status:
                                 <% let status=(assignment.status || 'Not Submitted' ).toUpperCase(); %>
                                     <% let badgeClass='' ; if (status==='MARKED' ) badgeClass='status-badge-marked' ;
@@ -256,6 +262,9 @@
                             <h3>
                                 <%= assignment.title %>
                             </h3>
+                            <p>Subject: <strong>
+                                    <%= assignment.subject_name || 'N/A' %>
+                                </strong></p>
                             <p>Status: <span class="status-badge status-badge-not-submitted">NOT SUBMITTED</span></p>
                             <p>Deadline: <%= new Date(assignment.deadline).toLocaleDateString() %>
                             </p>

@@ -46,6 +46,7 @@ CREATE TABLE `assignments` (
   `assignment_id` int(11) NOT NULL,
   `student_id` int(11) NOT NULL,
   `assignment_file` mediumblob DEFAULT NULL,
+  `file_type` text NOT NULL,
   `submitted_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `student_comment` text NOT NULL,
   `marks` decimal(5,2) DEFAULT NULL,
@@ -60,7 +61,7 @@ CREATE TABLE `assignments` (
   CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`assignment_id`) REFERENCES `assignments` (`id`) ON DELETE CASCADE,
   CONSTRAINT `submissions_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `submissions_ibfk_3` FOREIGN KEY (`marked_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
 
 
 -- Sample Data (Optional)

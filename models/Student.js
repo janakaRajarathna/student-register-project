@@ -16,9 +16,11 @@ class Student {
                     s.marks as grade,
                     s.feedback,
                     s.student_comment,
-                    s.submitted_at
+                    s.submitted_at,
+                    sub.name as subject_name
                 FROM assignments a
                 LEFT JOIN submissions s ON a.id = s.assignment_id AND s.student_id = ?
+                LEFT JOIN subjects sub ON a.subject_id = sub.id
                 ORDER BY a.deadline ASC
             `, [studentId]);
             return assignments;
