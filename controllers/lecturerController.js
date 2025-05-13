@@ -14,7 +14,7 @@ class LecturerController {
     // Render lecturer dashboard
     async getDashboard(req, res) {
         try {
-            const lecturerId = req.session.user.id;
+            const lecturerId = req.session.user?req.session.user.id:req.user.id;
             const submissions = await this.lecturerModel.getSubmissionsToGrade(lecturerId);
             let performance = await this.lecturerModel.getClassPerformance(lecturerId);
             if (!Array.isArray(performance)) performance = [];
@@ -39,7 +39,7 @@ class LecturerController {
     async createAssignment(req, res) {
         try {
             const { title, description, deadline, maxMarks, subjectId } = req.body;
-            const createdBy = req.user.id;
+            const createdBy = req.session.user?req.session.user.id:req.user.id;
 
             const result = await this.assignmentModel.create({
                 title,
@@ -81,7 +81,7 @@ class LecturerController {
     // Get all assignments for the lecturer
     async getAssignments(req, res) {
         try {
-            const createdBy = req.user.id;
+            const createdBy = req.session.user?req.session.user.id:req.user.id;
             const result = await this.assignmentModel.getByLecturer(createdBy);
 
             if (result.success) {
@@ -136,7 +136,7 @@ class LecturerController {
     async updateAssignment(req, res) {
         try {
             const assignmentId = req.params.id;
-            const createdBy = req.user.id;
+            const createdBy = req.session.user?req.session.user.id:req.user.id;
             const { title, description, deadline, maxMarks, subjectId } = req.body;
 
             const result = await this.assignmentModel.update(assignmentId, createdBy, {
@@ -199,7 +199,7 @@ class LecturerController {
     async getSubmissionPreview(req, res) {
         try {
             const submissionId = req.params.id;
-            const lecturerId = req.session.user.id;
+            const lecturerId = req.session.user?req.session.user.id:req.user.id;
 
             const submission = await this.lecturerModel.getSubmissionById(submissionId, lecturerId);
 
@@ -243,7 +243,7 @@ class LecturerController {
     async submitGrade(req, res) {
         try {
             const { submissionId, grade, feedback } = req.body;
-            const lecturerId = req.session.user.id;
+            const lecturerId = req.session.user?req.session.user.id:req.user.id;
 
             if (!submissionId || !grade || !feedback) {
                 return res.status(400).json({
@@ -277,7 +277,7 @@ class LecturerController {
     // Get performance for a single assignment
     async getAssignmentPerformance(req, res) {
         try {
-            const lecturerId = req.session.user.id;
+            const lecturerId = req.session.user?req.session.user.id:req.user.id;
             const assignmentId = req.params.assignmentId;
             const performance = await this.lecturerModel.getAssignmentPerformance(lecturerId, assignmentId);
             res.json({ success: true, performance });
