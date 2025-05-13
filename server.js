@@ -32,13 +32,15 @@ const DB_USER = process.env.DB_USER || 'root';
 const DB_PASSWORD = process.env.DB_PASSWORD || '1234';
 const DB_NAME = process.env.DB_NAME || 'assignment_system';
 const NODE_ENV = process.env.NODE_ENV || 'development';
+const DB_PORT = process.env.DB_PORT || 3306;
 
 // Database Configuration
 const dbConfig = {
   host: DB_HOST,
   user: DB_USER,
   password: DB_PASSWORD,
-  database: DB_NAME
+  database: DB_NAME,
+  port: DB_PORT
 };
 
 // Middleware
