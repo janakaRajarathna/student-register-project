@@ -350,6 +350,7 @@
                     <tr>
                         <th>Title</th>
                         <th>Description</th>
+                        <th>Subject</th>
                         <th>Deadline</th>
                         <th>Max Marks</th>
                         <th>Actions</th>
@@ -503,11 +504,22 @@
                     if (data.assignments.length === 0) {
                         noAssignments.style.display = 'block';
                     } else {
+                        // Get subjects for mapping
+                        const subjectsResponse = await fetch('/lecturer/subjects');
+                        const subjectsData = await subjectsResponse.json();
+                        const subjectsMap = {};
+                        if (subjectsData.success) {
+                            subjectsData.subjects.forEach(subject => {
+                                subjectsMap[subject.id] = subject.name;
+                            });
+                        }
+
                         data.assignments.forEach(assignment => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
                                 <td>${assignment.title}</td>
                                 <td>${assignment.description}</td>
+                                <td>${subjectsMap[assignment.subject_id] || 'N/A'}</td>
                                 <td>${formatDate(assignment.deadline)}</td>
                                 <td>${assignment.max_marks}</td>
                                 <td>
