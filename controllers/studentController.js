@@ -12,6 +12,8 @@ class StudentController {
             const assignments = await this.studentModel.getAssignments(studentId);
             const performance = await this.studentModel.getPerformanceData(studentId);
 
+            console.log('Performance:', performance);
+
             res.render('student/dashboard', {
                 assignments,
                 performance,
@@ -143,6 +145,17 @@ class StudentController {
                 success: false,
                 message: 'Error retrieving submission preview'
             });
+        }
+    }
+
+    // Get performance data as JSON for AJAX
+    async getPerformanceData(req, res) {
+        try {
+            const studentId = req.session.user.id;
+            const performance = await this.studentModel.getPerformanceData(studentId);
+            res.json({ success: true, performance });
+        } catch (error) {
+            res.status(500).json({ success: false, message: 'Error loading performance data' });
         }
     }
 }

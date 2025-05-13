@@ -20,4 +20,9 @@ router.post('/submit-assignment', (req, res) => {
     req.studentController.submitAssignment(req, res);
 });
 
+// Get performance data
+router.get('/performance', (req, res) => {
+    req.studentController.getPerformanceData(req, res);
+});
+
 module.exports = router; 

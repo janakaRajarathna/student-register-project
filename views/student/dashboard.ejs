@@ -369,6 +369,48 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/student.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let performanceChartInstance = null;
+        async function loadPerformanceChart() {
+            const response = await fetch('/student/performance');
+            const result = await response.json();
+            if (!result.success) return;
+
+            const performance = result.performance;
+            const labels = performance.map(item => item.title);
+            const data = performance.map(item => item.grade);
+
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            if (performanceChartInstance) {
+                performanceChartInstance.destroy();
+            }
+            performanceChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Marks',
+                        data: data,
+                        borderColor: '#2196f3',
+                        backgroundColor: 'rgba(33,150,243,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Marks' } },
+                        x: { title: { display: true, text: 'Assignment' } }
+                    }
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', loadPerformanceChart);
+    </script>
     <script src="/js/submission-info.js"></script>
 </body>
 

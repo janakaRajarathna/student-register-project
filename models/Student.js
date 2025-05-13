@@ -39,7 +39,7 @@ class Student {
                     s.feedback
                 FROM submissions s
                 JOIN assignments a ON s.assignment_id = a.id
-                WHERE s.student_id = ? AND s.status = 'GRADED'
+                WHERE s.student_id = ? AND s.status = 'MARKED'
                 ORDER BY s.marked_at DESC
             `, [studentId]);
             return performance;
