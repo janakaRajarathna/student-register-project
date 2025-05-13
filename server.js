@@ -346,3 +346,19 @@ app.get('/api/submissions', async (req, res) => {
     res.status(500).json({ error: 'Failed to load submissions' });
   }
 });
+
+// Root route: redirect to login if not logged in, else to dashboard
+app.get('/', (req, res) => {
+  console.log('come here')
+  if (!req.session.user) {
+    return res.redirect('/auth/login');
+  }
+  if (req.session.user.role === 'student') {
+    return res.redirect('/student/dashboard');
+  } else if (req.session.user.role === 'lecturer') {
+    return res.redirect('/lecturer/dashboard');
+  } else if (req.session.user.role === 'admin') {
+    return res.redirect('/admin/dashboard');
+  }
+  res.redirect('/auth/login');
+});
