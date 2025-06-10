@@ -3,7 +3,6 @@ const router = express.Router();
 
 // Dashboard route
 router.get('/dashboard', (req, res) => {
-    console.log('aaaa aaaawa');
     req.adminController.getDashboard(req, res);
 });
 

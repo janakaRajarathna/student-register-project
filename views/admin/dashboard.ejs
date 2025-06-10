@@ -128,47 +128,6 @@
         </div>
     </div>
 
-    <script>
-        // Modal functionality
-        function showSubjectModal() {
-            document.getElementById('subjectModal').style.display = 'block';
-        }
-
-        // Close modal when clicking the X
-        document.querySelector('.close').onclick = function () {
-            document.getElementById('subjectModal').style.display = 'none';
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function (event) {
-            if (event.target == document.getElementById('subjectModal')) {
-                document.getElementById('subjectModal').style.display = 'none';
-            }
-        }
-
-        // Form submission
-        document.getElementById('subjectForm').onsubmit = async function (e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-
-            try {
-                const response = await fetch('/admin/subjects', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    alert('Error creating subject');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error creating subject');
-            }
-        };
-    </script>
-
     <style>
         /* Modal Styles */
         .modal {
@@ -220,7 +179,125 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+
+        /* Toast Styles */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        .toast-success {
+            background-color: var(--success-color);
+        }
+
+        .toast-error {
+            background-color: var(--danger-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
     </style>
+
+    <!-- Add toast container before closing body tag -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Modal functionality
+        function showSubjectModal() {
+            document.getElementById('subjectModal').style.display = 'block';
+        }
+
+        // Close modal when clicking the X
+        document.querySelector('.close').onclick = function () {
+            document.getElementById('subjectModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            if (event.target == document.getElementById('subjectModal')) {
+                document.getElementById('subjectModal').style.display = 'none';
+            }
+        }
+
+        // Toast functionality
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.style.display = 'block';
+
+            // Add slide out animation before hiding
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-in-out';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.style.animation = 'slideIn 0.3s ease-in-out';
+                }, 300);
+            }, 3000);
+        }
+
+        // Update form submission to show toast
+        document.getElementById('subjectForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch('/admin/subjects', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast('Subject created successfully!', 'success');
+                    // Close modal
+                    document.getElementById('subjectModal').style.display = 'none';
+                    // Reset form
+                    this.reset();
+                    // Reload page after toast
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.error || 'Failed to create subject', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        };
+    </script>
 </body>
 
 </html>
