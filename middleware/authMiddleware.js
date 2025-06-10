@@ -62,7 +62,6 @@ class AuthMiddleware {
         }
 
         try {
-            console.log('Verifying token with secret:', this.secretKey);
             const decoded = jwt.verify(token, this.secretKey);
             console.log('Token decoded successfully:', decoded);
             req.session.user = decoded;
