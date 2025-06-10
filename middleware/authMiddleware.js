@@ -27,6 +27,7 @@ class AuthMiddleware {
 
         try {
             const decoded = jwt.verify(token, this.secretKey);
+            req.session.user = decoded;
             req.user = decoded;
             next();
         } catch (error) {
@@ -64,7 +65,9 @@ class AuthMiddleware {
             console.log('Verifying token with secret:', this.secretKey);
             const decoded = jwt.verify(token, this.secretKey);
             console.log('Token decoded successfully:', decoded);
+            req.session.user = decoded;
             req.user = decoded;
+
             next();
         } catch (error) {
             console.error('Token verification failed:', error.message);
