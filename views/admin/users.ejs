@@ -29,7 +29,7 @@
         <main class="main-content">
             <header class="dashboard-header">
                 <h1><i class="fas fa-users"></i> Manage Users</h1>
-                <button onclick="showUserModal()" class="btn btn-primary">
+                <button type="button" id="addUserBtn" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Add New User
                 </button>
             </header>
@@ -78,10 +78,11 @@
                                             <% } %>
                                     </td>
                                     <td class="action-buttons">
-                                        <button onclick="editUser(<%= JSON.stringify(user) %>)" class="btn btn-edit">
+                                        <button class="btn btn-edit edit-user-btn"
+                                            data-user='<%= JSON.stringify(user) %>'>
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button onclick="deleteUser(<%= user.id %>)" class="btn btn-delete">
+                                        <button class="btn btn-delete delete-user-btn" data-user-id="<%= user.id %>">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
@@ -99,7 +100,7 @@
     </div>
 
     <!-- Add/Edit User Modal -->
-    <div id="userModal" class="modal">
+    <div id="userModal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2 id="modalTitle">Add New User</h2>
@@ -136,7 +137,7 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="modal">
+    <div id="deleteModal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Confirm Delete</h2>
@@ -250,6 +251,89 @@
             color: #666;
         }
 
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            align-items: center;
+            /* Center vertically */
+            justify-content: center;
+            /* Center horizontally */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            /* Added consistent shadow */
+            box-sizing: border-box;
+            /* Include padding and border in element's total width */
+            position: relative;
+            /* Needed for absolute positioning of close button if not floated */
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box;
+            /* Include padding and border in the element's total width and height */
+        }
+
+        .modal-content .btn-primary {
+            width: auto;
+            padding: 10px 20px;
+            margin-top: 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
         /* Toast Styles */
         .toast {
             position: fixed;
@@ -315,9 +399,46 @@
     <script>
         let userToDelete = null;
 
+        // Add event listener for the Add New User button
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add New User button
+            const addUserButton = document.getElementById('addUserBtn');
+            if (addUserButton) {
+                addUserButton.addEventListener('click', function () {
+                    console.log('Add New User button clicked!'); // DEBUG
+                    showUserModal();
+                });
+            } else {
+                console.error('Add New User button not found!'); // DEBUG
+            }
+
+            // Edit User buttons
+            document.querySelectorAll('.edit-user-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    console.log('Edit User button clicked!'); // DEBUG
+                    const userData = JSON.parse(this.getAttribute('data-user'));
+                    editUser(userData);
+                });
+            });
+
+            // Delete User buttons
+            document.querySelectorAll('.delete-user-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    console.log('Delete User button clicked!'); // DEBUG
+                    const userId = this.getAttribute('data-user-id');
+                    deleteUser(userId);
+                });
+            });
+        });
+
         // Modal functionality
         function showUserModal(user = null) {
+            console.log('showUserModal called with user:', user); // DEBUG
             const modal = document.getElementById('userModal');
+            if (!modal) {
+                console.error('Modal element with ID "userModal" not found!'); // DEBUG
+                return;
+            }
             const form = document.getElementById('userForm');
             const title = document.getElementById('modalTitle');
             const passwordField = document.getElementById('password');
@@ -335,9 +456,10 @@
                 form.reset();
                 document.getElementById('userId').value = '';
                 passwordField.required = true;
+                passwordField.value = ''; // Clear password field
             }
 
-            modal.style.display = 'block';
+            modal.style.display = 'flex'; // Set display to flex to show modal and enable centering
         }
 
         function showDeleteModal(userId) {
@@ -388,10 +510,19 @@
             const method = userId ? 'PUT' : 'POST';
             const url = userId ? `/admin/users/${userId}` : '/admin/users';
 
+            // Convert FormData to JSON for better handling
+            const formDataObj = {};
+            formData.forEach((value, key) => {
+                formDataObj[key] = value;
+            });
+
             try {
                 const response = await fetch(url, {
                     method: method,
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formDataObj)
                 });
 
                 const data = await response.json();
