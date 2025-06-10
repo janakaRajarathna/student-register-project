@@ -86,6 +86,16 @@ class AdminController {
                 return res.status(400).json({ error: 'Invalid lecturer' });
             }
 
+            // Check if subject with same name and lecturer already exists
+            const [existingSubject] = await this.db.execute(
+                'SELECT id FROM subjects WHERE name = ? AND lecturer_id = ?',
+                [name, lecturer_id]
+            );
+
+            if (existingSubject.length > 0) {
+                return res.status(400).json({ error: 'A subject with this name is already assigned to this lecturer' });
+            }
+
             // Create subject
             const [result] = await this.db.execute(
                 'INSERT INTO subjects (name, lecturer_id) VALUES (?, ?)',
@@ -101,6 +111,7 @@ class AdminController {
 
     async getSubjects(req, res) {
         try {
+            // Get all subjects with lecturer names
             const [subjects] = await this.db.execute(`
                 SELECT s.*, u.full_name as lecturer_name
                 FROM subjects s
@@ -108,13 +119,73 @@ class AdminController {
                 ORDER BY s.name
             `);
 
+            // Get all lecturers for the dropdown
+            const [lecturers] = await this.db.execute(
+                'SELECT id, full_name FROM users WHERE role = ?',
+                ['lecturer']
+            );
+
             res.render('admin/subjects', {
                 user: req.session.user,
-                subjects
+                subjects,
+                lecturers
             });
         } catch (error) {
             console.error('Get subjects error:', error);
             res.status(500).send('Error loading subjects');
+        }
+    }
+
+    async updateSubject(req, res) {
+        try {
+            const { id } = req.params;
+            const { name, lecturer_id } = req.body;
+
+            // Validate input
+            if (!name || !lecturer_id) {
+                return res.status(400).json({ error: 'Name and lecturer are required' });
+            }
+
+            // Check if subject exists
+            const [subject] = await this.db.execute(
+                'SELECT id FROM subjects WHERE id = ?',
+                [id]
+            );
+
+            if (!subject.length) {
+                return res.status(404).json({ error: 'Subject not found' });
+            }
+
+            // Check if lecturer exists
+            const [lecturer] = await this.db.execute(
+                'SELECT id FROM users WHERE id = ? AND role = ?',
+                [lecturer_id, 'lecturer']
+            );
+
+            if (!lecturer.length) {
+                return res.status(400).json({ error: 'Invalid lecturer' });
+            }
+
+            // Check if subject with same name and lecturer already exists (excluding current subject)
+            const [existingSubject] = await this.db.execute(
+                'SELECT id FROM subjects WHERE name = ? AND lecturer_id = ? AND id != ?',
+                [name, lecturer_id, id]
+            );
+
+            if (existingSubject.length > 0) {
+                return res.status(400).json({ error: 'A subject with this name is already assigned to this lecturer' });
+            }
+
+            // Update subject
+            await this.db.execute(
+                'UPDATE subjects SET name = ?, lecturer_id = ? WHERE id = ?',
+                [name, lecturer_id, id]
+            );
+
+            res.json({ success: true });
+        } catch (error) {
+            console.error('Update subject error:', error);
+            res.status(500).json({ error: 'Error updating subject' });
         }
     }
 
@@ -130,6 +201,18 @@ class AdminController {
 
             if (!subject.length) {
                 return res.status(404).json({ error: 'Subject not found' });
+            }
+
+            // Check if subject has any assignments
+            const [assignments] = await this.db.execute(
+                'SELECT id FROM assignments WHERE subject_id = ?',
+                [id]
+            );
+
+            if (assignments.length > 0) {
+                return res.status(400).json({
+                    error: 'Cannot delete subject with existing assignments'
+                });
             }
 
             // Delete subject

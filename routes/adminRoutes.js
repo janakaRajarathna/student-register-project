@@ -15,6 +15,10 @@ router.post('/subjects', (req, res) => {
     req.adminController.createSubject(req, res);
 });
 
+router.put('/subjects/:id', (req, res) => {
+    req.adminController.updateSubject(req, res);
+});
+
 router.delete('/subjects/:id', (req, res) => {
     req.adminController.deleteSubject(req, res);
 });
