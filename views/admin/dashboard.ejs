@@ -5,53 +5,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
     <div class="dashboard-container">
         <nav class="sidebar">
             <div class="sidebar-header">
-                <h3>Admin Panel</h3>
+                <h3><i class="fas fa-user-shield"></i> Admin Panel</h3>
             </div>
             <ul class="nav-links">
-                <li><a href="/admin/dashboard" class="active">Dashboard</a></li>
-                <li><a href="/admin/users">Manage Users</a></li>
-                <li><a href="/admin/subjects">Manage Subjects</a></li>
-                <li><a href="/admin/assignments">All Assignments</a></li>
-                <li><a href="/admin/reports">Reports</a></li>
-                <li><a href="/auth/logout">Logout</a></li>
+                <li><a href="/admin/dashboard" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="/admin/users"><i class="fas fa-users"></i> Manage Users</a></li>
+                <li><a href="/admin/subjects"><i class="fas fa-book"></i> Manage Subjects</a></li>
+                <li><a href="/admin/assignments"><i class="fas fa-tasks"></i> All Assignments</a></li>
+                <li><a href="/admin/reports"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                <li><a href="/auth/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </nav>
 
         <main class="main-content">
             <header class="dashboard-header">
-                <h1>Admin Dashboard</h1>
+                <h1><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h1>
                 <div class="user-info">
-                    Welcome, <%= user.name %>
+                    <i class="fas fa-user-circle"></i> Welcome, <%= user.full_name %>
                 </div>
             </header>
 
             <div class="dashboard-stats">
                 <div class="stat-card">
-                    <h3>Total Users</h3>
-                    <p class="stat-number">
-                        <%= stats.totalUsers %>
-                    </p>
-                </div>
-                <div class="stat-card">
-                    <h3>Total Lecturers</h3>
-                    <p class="stat-number">
-                        <%= stats.totalLecturers %>
-                    </p>
-                </div>
-                <div class="stat-card">
+                    <i class="fas fa-users fa-2x" style="color: var(--primary-color)"></i>
                     <h3>Total Students</h3>
                     <p class="stat-number">
                         <%= stats.totalStudents %>
                     </p>
                 </div>
                 <div class="stat-card">
+                    <i class="fas fa-chalkboard-teacher fa-2x" style="color: var(--success-color)"></i>
+                    <h3>Total Lecturers</h3>
+                    <p class="stat-number">
+                        <%= stats.totalLecturers %>
+                    </p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-book fa-2x" style="color: var(--warning-color)"></i>
+                    <h3>Total Subjects</h3>
+                    <p class="stat-number">
+                        <%= stats.totalSubjects %>
+                    </p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-tasks fa-2x" style="color: var(--danger-color)"></i>
                     <h3>Total Assignments</h3>
                     <p class="stat-number">
                         <%= stats.totalAssignments %>
@@ -59,40 +64,163 @@
                 </div>
             </div>
 
-            <div class="dashboard-sections">
-                <section class="recent-activity">
-                    <h2>Recent Activity</h2>
-                    <div class="activity-list">
-                        <% if (recentActivity && recentActivity.length> 0) { %>
-                            <% recentActivity.forEach(activity=> { %>
-                                <div class="activity-item">
-                                    <span class="activity-time">
-                                        <%= activity.timestamp %>
-                                    </span>
-                                    <span class="activity-description">
-                                        <%= activity.description %>
-                                    </span>
-                                </div>
-                                <% }); %>
-                                    <% } else { %>
-                                        <p>No recent activity</p>
-                                        <% } %>
-                    </div>
-                </section>
+            <div class="quick-actions">
+                <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                <div class="action-buttons">
+                    <button onclick="showSubjectModal()" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create New Subject
+                    </button>
+                    <a href="/admin/users/new" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Add New User
+                    </a>
+                    <a href="/admin/reports/generate" class="btn btn-primary">
+                        <i class="fas fa-file-export"></i> Generate Report
+                    </a>
+                </div>
+            </div>
 
-                <section class="quick-actions">
-                    <h2>Quick Actions</h2>
-                    <div class="action-buttons">
-                        <a href="/admin/users/new" class="btn btn-primary">Add New User</a>
-                        <a href="/admin/subjects/new" class="btn btn-primary">Add New Subject</a>
-                        <a href="/admin/reports/generate" class="btn btn-primary">Generate Report</a>
-                    </div>
-                </section>
+            <div class="recent-activity">
+                <h2><i class="fas fa-history"></i> Recent Activity</h2>
+                <div class="activity-list">
+                    <% if (recentActivity && recentActivity.length> 0) { %>
+                        <% recentActivity.forEach(activity=> { %>
+                            <div class="activity-item">
+                                <i class="fas fa-circle" style="color: var(--primary-color); font-size: 0.5rem;"></i>
+                                <span class="activity-time">
+                                    <%= activity.timestamp %>
+                                </span>
+                                <span class="activity-description">
+                                    <%= activity.description %>
+                                </span>
+                            </div>
+                            <% }); %>
+                                <% } else { %>
+                                    <p>No recent activity</p>
+                                    <% } %>
+                </div>
             </div>
         </main>
     </div>
 
-    <script src="/js/admin.js"></script>
+    <!-- Subject Creation Modal -->
+    <div id="subjectModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Create New Subject</h2>
+            <form id="subjectForm" action="/admin/subjects" method="POST">
+                <div class="form-group">
+                    <label for="subjectName">Subject Name:</label>
+                    <input type="text" id="subjectName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="lecturerId">Assign Lecturer:</label>
+                    <select id="lecturerId" name="lecturer_id" required>
+                        <option value="">Select Lecturer</option>
+                        <% lecturers.forEach(lecturer=> { %>
+                            <option value="<%= lecturer.id %>">
+                                <%= lecturer.full_name %>
+                            </option>
+                            <% }); %>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Subject</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Modal functionality
+        function showSubjectModal() {
+            document.getElementById('subjectModal').style.display = 'block';
+        }
+
+        // Close modal when clicking the X
+        document.querySelector('.close').onclick = function () {
+            document.getElementById('subjectModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            if (event.target == document.getElementById('subjectModal')) {
+                document.getElementById('subjectModal').style.display = 'none';
+            }
+        }
+
+        // Form submission
+        document.getElementById('subjectForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch('/admin/subjects', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Error creating subject');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error creating subject');
+            }
+        };
+    </script>
+
+    <style>
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
 </body>
 
 </html>

@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+
 class AdminController {
     constructor(db) {
         this.db = db;
@@ -5,50 +7,141 @@ class AdminController {
 
     async getDashboard(req, res) {
         try {
-            // Get total users count
-            const [totalUsers] = await this.db.execute('SELECT COUNT(*) as count FROM users');
-
-            // Get total lecturers count
-            const [totalLecturers] = await this.db.execute(
-                'SELECT COUNT(*) as count FROM users WHERE role = "lecturer"'
-            );
-
-            // Get total students count
+            // Get counts for dashboard stats
             const [totalStudents] = await this.db.execute(
-                'SELECT COUNT(*) as count FROM users WHERE role = "student"'
+                'SELECT COUNT(*) as count FROM users WHERE role = ?',
+                ['student']
             );
 
-            // Get total assignments count
-            const [totalAssignments] = await this.db.execute('SELECT COUNT(*) as count FROM assignments');
+            const [totalLecturers] = await this.db.execute(
+                'SELECT COUNT(*) as count FROM users WHERE role = ?',
+                ['lecturer']
+            );
 
-            // Get recent activity (last 5 submissions)
+            const [totalSubjects] = await this.db.execute(
+                'SELECT COUNT(*) as count FROM subjects'
+            );
+
+            const [totalAssignments] = await this.db.execute(
+                'SELECT COUNT(*) as count FROM assignments'
+            );
+
+            // Get recent activity
             const [recentActivity] = await this.db.execute(`
                 SELECT 
-                    s.submitted_at as timestamp,
-                    CONCAT(u.name, ' submitted assignment: ', a.title) as description
+                    'assignment_created' as type,
+                    a.title as description,
+                    a.created_at as timestamp
+                FROM assignments a
+                UNION ALL
+                SELECT 
+                    'submission_made' as type,
+                    CONCAT('New submission for ', a.title) as description,
+                    s.submitted_at as timestamp
                 FROM submissions s
-                JOIN users u ON s.student_id = u.id
                 JOIN assignments a ON s.assignment_id = a.id
-                ORDER BY s.submitted_at DESC
-                LIMIT 5
+                ORDER BY timestamp DESC
+                LIMIT 10
             `);
+
+            // Get lecturers for subject creation
+            const [lecturers] = await this.db.execute(
+                'SELECT id, full_name FROM users WHERE role = ?',
+                ['lecturer']
+            );
 
             res.render('admin/dashboard', {
                 user: req.session.user,
                 stats: {
-                    totalUsers: totalUsers[0].count,
-                    totalLecturers: totalLecturers[0].count,
                     totalStudents: totalStudents[0].count,
+                    totalLecturers: totalLecturers[0].count,
+                    totalSubjects: totalSubjects[0].count,
                     totalAssignments: totalAssignments[0].count
                 },
-                recentActivity: recentActivity
+                recentActivity,
+                lecturers
             });
         } catch (error) {
-            console.error('Error loading admin dashboard:', error);
-            res.status(500).render('error', {
-                message: 'Error loading dashboard',
-                error: error
+            console.error('Dashboard error:', error);
+            res.status(500).send('Error loading dashboard');
+        }
+    }
+
+    async createSubject(req, res) {
+        try {
+            const { name, lecturer_id } = req.body;
+
+            // Validate input
+            if (!name || !lecturer_id) {
+                return res.status(400).json({ error: 'Name and lecturer are required' });
+            }
+
+            // Check if lecturer exists
+            const [lecturer] = await this.db.execute(
+                'SELECT id FROM users WHERE id = ? AND role = ?',
+                [lecturer_id, 'lecturer']
+            );
+
+            if (!lecturer.length) {
+                return res.status(400).json({ error: 'Invalid lecturer' });
+            }
+
+            // Create subject
+            const [result] = await this.db.execute(
+                'INSERT INTO subjects (name, lecturer_id) VALUES (?, ?)',
+                [name, lecturer_id]
+            );
+
+            res.json({ success: true, subjectId: result.insertId });
+        } catch (error) {
+            console.error('Create subject error:', error);
+            res.status(500).json({ error: 'Error creating subject' });
+        }
+    }
+
+    async getSubjects(req, res) {
+        try {
+            const [subjects] = await this.db.execute(`
+                SELECT s.*, u.full_name as lecturer_name
+                FROM subjects s
+                LEFT JOIN users u ON s.lecturer_id = u.id
+                ORDER BY s.name
+            `);
+
+            res.render('admin/subjects', {
+                user: req.session.user,
+                subjects
             });
+        } catch (error) {
+            console.error('Get subjects error:', error);
+            res.status(500).send('Error loading subjects');
+        }
+    }
+
+    async deleteSubject(req, res) {
+        try {
+            const { id } = req.params;
+
+            // Check if subject exists
+            const [subject] = await this.db.execute(
+                'SELECT id FROM subjects WHERE id = ?',
+                [id]
+            );
+
+            if (!subject.length) {
+                return res.status(404).json({ error: 'Subject not found' });
+            }
+
+            // Delete subject
+            await this.db.execute(
+                'DELETE FROM subjects WHERE id = ?',
+                [id]
+            );
+
+            res.json({ success: true });
+        } catch (error) {
+            console.error('Delete subject error:', error);
+            res.status(500).json({ error: 'Error deleting subject' });
         }
     }
 
@@ -60,24 +153,6 @@ class AdminController {
             console.error('Error loading users:', error);
             res.status(500).render('error', {
                 message: 'Error loading users',
-                error: error
-            });
-        }
-    }
-
-    async getSubjects(req, res) {
-        try {
-            const [subjects] = await this.db.execute(`
-                SELECT s.*, u.name as lecturer_name 
-                FROM subjects s
-                LEFT JOIN users u ON s.lecturer_id = u.id
-                ORDER BY s.name
-            `);
-            res.render('admin/subjects', { subjects });
-        } catch (error) {
-            console.error('Error loading subjects:', error);
-            res.status(500).render('error', {
-                message: 'Error loading subjects',
                 error: error
             });
         }

@@ -19,9 +19,11 @@ if (!fs.existsSync(uploadsDir)) {
 const authRoutes = require('./routes/authRoutes');
 const mainRoutes = require('./routes/mainRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const AuthController = require('./controllers/authController');
 const AuthMiddleware = require('./middleware/authMiddleware');
 const StudentController = require('./controllers/studentController');
+const AdminController = require('./controllers/adminController');
 const lecturerRoutes = require('./routes/lecturerRoutes');
 const LecturerController = require('./controllers/lecturerController');
 
@@ -86,6 +88,7 @@ app.use(async (req, res, next) => {
     req.authController = new AuthController(db);
     req.studentController = new StudentController(db);
     req.lecturerController = new LecturerController(db);
+    req.adminController = new AdminController(db);
     req.authMiddleware = authMiddleware;
     next();
   } catch (err) {
@@ -116,6 +119,7 @@ app.use('/student', (req, res, next) => {
 app.use('/auth', authRoutes);
 app.use('/student', studentRoutes);
 app.use('/lecturer', lecturerRoutes);
+app.use('/admin', adminRoutes);
 app.use('/', mainRoutes);
 
 // Start Server
