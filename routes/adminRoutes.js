@@ -36,6 +36,18 @@ router.post('/users', (req, res) => {
     req.adminController.createUser(req, res);
 });
 
+router.put('/users/:id', (req, res) => {
+    req.adminController.updateUser(req, res);
+});
+
+router.delete('/users/:id', (req, res) => {
+    req.adminController.deleteUser(req, res);
+});
+
+router.put('/users/:id/status', (req, res) => {
+    req.adminController.toggleUserStatus(req, res);
+});
+
 // Assignment routes
 router.get('/assignments', (req, res) => {
     req.adminController.getAssignments(req, res);

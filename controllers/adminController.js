@@ -230,14 +230,172 @@ class AdminController {
 
     async getUsers(req, res) {
         try {
-            const [users] = await this.db.execute('SELECT * FROM users ORDER BY name');
-            res.render('admin/users', { users });
+            const [users] = await this.db.execute(`
+                SELECT id, username, full_name, email, role, status, created_at 
+                FROM users 
+                ORDER BY created_at DESC
+            `);
+            res.render('admin/users', {
+                user: req.session.user,
+                users
+            });
         } catch (error) {
             console.error('Error loading users:', error);
             res.status(500).render('error', {
                 message: 'Error loading users',
                 error: error
             });
+        }
+    }
+
+    async createUser(req, res) {
+        try {
+            const { username, password, full_name, email, role } = req.body;
+
+            // Validate input
+            if (!username || !password || !full_name || !email || !role) {
+                return res.status(400).json({ error: 'All fields are required' });
+            }
+
+            // Check if username or email already exists
+            const [existingUser] = await this.db.execute(
+                'SELECT id FROM users WHERE username = ? OR email = ?',
+                [username, email]
+            );
+
+            if (existingUser.length > 0) {
+                return res.status(400).json({ error: 'Username or email already exists' });
+            }
+
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Create user
+            const [result] = await this.db.execute(
+                'INSERT INTO users (username, password, full_name, email, role, status) VALUES (?, ?, ?, ?, ?, 0)',
+                [username, hashedPassword, full_name, email, role]
+            );
+
+            res.json({ success: true, userId: result.insertId });
+        } catch (error) {
+            console.error('Create user error:', error);
+            res.status(500).json({ error: 'Error creating user' });
+        }
+    }
+
+    async updateUser(req, res) {
+        try {
+            const { id } = req.params;
+            const { username, password, full_name, email, role } = req.body;
+
+            // Validate input
+            if (!username || !full_name || !email || !role) {
+                return res.status(400).json({ error: 'All fields except password are required' });
+            }
+
+            // Check if user exists
+            const [user] = await this.db.execute(
+                'SELECT id FROM users WHERE id = ?',
+                [id]
+            );
+
+            if (!user.length) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            // Check if username or email already exists (excluding current user)
+            const [existingUser] = await this.db.execute(
+                'SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?',
+                [username, email, id]
+            );
+
+            if (existingUser.length > 0) {
+                return res.status(400).json({ error: 'Username or email already exists' });
+            }
+
+            // Update user
+            if (password) {
+                const hashedPassword = await bcrypt.hash(password, 10);
+                await this.db.execute(
+                    'UPDATE users SET username = ?, password = ?, full_name = ?, email = ?, role = ? WHERE id = ?',
+                    [username, hashedPassword, full_name, email, role, id]
+                );
+            } else {
+                await this.db.execute(
+                    'UPDATE users SET username = ?, full_name = ?, email = ?, role = ? WHERE id = ?',
+                    [username, full_name, email, role, id]
+                );
+            }
+
+            res.json({ success: true });
+        } catch (error) {
+            console.error('Update user error:', error);
+            res.status(500).json({ error: 'Error updating user' });
+        }
+    }
+
+    async deleteUser(req, res) {
+        try {
+            const { id } = req.params;
+
+            // Check if user exists
+            const [user] = await this.db.execute(
+                'SELECT id FROM users WHERE id = ?',
+                [id]
+            );
+
+            if (!user.length) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            // Check if user is an admin
+            const [adminCheck] = await this.db.execute(
+                'SELECT role FROM users WHERE id = ?',
+                [id]
+            );
+
+            if (adminCheck[0].role === 'admin') {
+                return res.status(400).json({ error: 'Cannot delete admin users' });
+            }
+
+            // Delete user
+            await this.db.execute(
+                'DELETE FROM users WHERE id = ?',
+                [id]
+            );
+
+            res.json({ success: true });
+        } catch (error) {
+            console.error('Delete user error:', error);
+            res.status(500).json({ error: 'Error deleting user' });
+        }
+    }
+
+    async toggleUserStatus(req, res) {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+
+            // Check if user exists
+            const [user] = await this.db.execute(
+                'SELECT id FROM users WHERE id = ?',
+                [id]
+            );
+
+            if (!user.length) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            // Update user status
+            await this.db.execute(
+                'UPDATE users SET status = ? WHERE id = ?',
+                [status, id]
+            );
+
+            res.json({ success: true });
+        } catch (error) {
+            console.error('Toggle user status error:', error);
+            res.status(500).json({ error: 'Error updating user status' });
         }
     }
 

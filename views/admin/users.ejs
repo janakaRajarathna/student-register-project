@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users - Admin Panel</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-user-shield"></i> Admin Panel</h3>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/admin/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="/admin/users" class="active"><i class="fas fa-users"></i> Manage Users</a></li>
+                <li><a href="/admin/subjects"><i class="fas fa-book"></i> Manage Subjects</a></li>
+                <li><a href="/admin/assignments"><i class="fas fa-tasks"></i> All Assignments</a></li>
+                <li><a href="/admin/reports"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                <li><a href="/auth/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1><i class="fas fa-users"></i> Manage Users</h1>
+                <button onclick="showUserModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New User
+                </button>
+            </header>
+
+            <!-- Users Table -->
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (users && users.length> 0) { %>
+                            <% users.forEach(user=> { %>
+                                <tr>
+                                    <td>
+                                        <%= user.full_name %>
+                                    </td>
+                                    <td>
+                                        <%= user.username %>
+                                    </td>
+                                    <td>
+                                        <%= user.email %>
+                                    </td>
+                                    <td>
+                                        <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
+                                    </td>
+                                    <td>
+                                        <label class="switch">
+                                            <input type="checkbox" <%=user.status ? 'checked' : '' %>
+                                            <%= user.role==='admin' ? 'disabled' : '' %>
+                                                onchange="toggleUserStatus(<%= user.id %>, this.checked)">
+                                                    <span class="slider round"></span>
+                                        </label>
+                                        <% if (user.role==='admin' ) { %>
+                                            <small class="form-text"
+                                                style="display: block; margin-top: 5px; color: #666;">
+                                                <i class="fas fa-info-circle"></i> Admin status cannot be changed
+                                            </small>
+                                            <% } %>
+                                    </td>
+                                    <td class="action-buttons">
+                                        <button onclick="editUser(<%= JSON.stringify(user) %>)" class="btn btn-edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button onclick="deleteUser(<%= user.id %>)" class="btn btn-delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="no-data">No users found</td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Add New User</h2>
+            <form id="userForm">
+                <input type="hidden" id="userId" name="id">
+                <div class="form-group">
+                    <label for="fullName">Full Name:</label>
+                    <input type="text" id="fullName" name="full_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password">
+                    <small class="form-text">Leave blank to keep existing password when editing</small>
+                </div>
+                <div class="form-group">
+                    <label for="role">Role:</label>
+                    <select id="role" name="role" required>
+                        <option value="student">Student</option>
+                        <option value="lecturer">Lecturer</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Save User</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Confirm Delete</h2>
+            <p>Are you sure you want to delete this user? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button onclick="confirmDelete()" class="btn btn-delete">Delete</button>
+                <button onclick="closeDeleteModal()" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <style>
+        /* Table Styles */
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-top: 20px;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Switch Styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked+.slider {
+            background-color: var(--success-color);
+        }
+
+        input:focus+.slider {
+            box-shadow: 0 0 1px var(--success-color);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Form Text */
+        .form-text {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        /* Toast Styles */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        .toast-success {
+            background-color: var(--success-color);
+        }
+
+        .toast-error {
+            background-color: var(--danger-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* Disabled Switch Styles */
+        .switch input:disabled+.slider {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        .switch input:disabled:checked+.slider {
+            background-color: #6c757d;
+        }
+
+        .switch input:disabled+.slider:before {
+            background-color: #f8f9fa;
+        }
+    </style>
+
+    <script>
+        let userToDelete = null;
+
+        // Modal functionality
+        function showUserModal(user = null) {
+            const modal = document.getElementById('userModal');
+            const form = document.getElementById('userForm');
+            const title = document.getElementById('modalTitle');
+            const passwordField = document.getElementById('password');
+
+            if (user) {
+                title.textContent = 'Edit User';
+                document.getElementById('userId').value = user.id;
+                document.getElementById('fullName').value = user.full_name;
+                document.getElementById('username').value = user.username;
+                document.getElementById('email').value = user.email;
+                document.getElementById('role').value = user.role;
+                passwordField.required = false;
+            } else {
+                title.textContent = 'Add New User';
+                form.reset();
+                document.getElementById('userId').value = '';
+                passwordField.required = true;
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function showDeleteModal(userId) {
+            userToDelete = userId;
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            userToDelete = null;
+        }
+
+        // Close modals when clicking the X
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.onclick = function () {
+                this.closest('.modal').style.display = 'none';
+            }
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Toast functionality
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.style.display = 'block';
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-in-out';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.style.animation = 'slideIn 0.3s ease-in-out';
+                }, 300);
+            }, 3000);
+        }
+
+        // Form submission
+        document.getElementById('userForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const userId = formData.get('id');
+            const method = userId ? 'PUT' : 'POST';
+            const url = userId ? `/admin/users/${userId}` : '/admin/users';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(userId ? 'User updated successfully!' : 'User created successfully!', 'success');
+                    document.getElementById('userModal').style.display = 'none';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.error || 'Operation failed', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        };
+
+        // Toggle user status
+        async function toggleUserStatus(userId, status) {
+            const checkbox = event.target;
+            try {
+                const response = await fetch(`/admin/users/${userId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: status ? 1 : 0 })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(`User ${status ? 'enabled' : 'disabled'} successfully!`, 'success');
+                } else {
+                    showToast(data.error || 'Failed to update user status', 'error');
+                    // Revert the switch if the operation failed
+                    checkbox.checked = !status;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+                // Revert the switch if the operation failed
+                checkbox.checked = !status;
+            }
+        }
+
+        // Delete user
+        async function confirmDelete() {
+            if (!userToDelete) return;
+
+            try {
+                const response = await fetch(`/admin/users/${userToDelete}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast('User deleted successfully!', 'success');
+                    closeDeleteModal();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.error || 'Failed to delete user', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        }
+
+        // Edit user
+        function editUser(user) {
+            showUserModal(user);
+        }
+
+        // Delete user
+        function deleteUser(userId) {
+            showDeleteModal(userId);
+        }
+    </script>
+</body>
+
+</html>
