@@ -4,55 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lecturer Dashboard
-    </title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Lecturer Dashboard</title>
+    <link rel="stylesheet" href="/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-        }
-
-        .btn-primary {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #45a049;
-        }
-
+        /* Lecturer-specific styles */
         .grading-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 1rem;
             background: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            border-radius: 10px;
             overflow: hidden;
         }
 
         .grading-table th,
         .grading-table td {
-            padding: 1rem;
+            padding: 15px;
             text-align: left;
             border-bottom: 1px solid #eee;
         }
@@ -60,6 +29,7 @@
         .grading-table th {
             background-color: #f8f9fa;
             font-weight: 600;
+            color: var(--secondary-color);
         }
 
         .grading-table tr:hover {
@@ -67,54 +37,78 @@
         }
 
         .btn-grade {
-            background-color: #2196F3;
+            background-color: var(--primary-color);
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 8px 16px;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 0.9rem;
             transition: background-color 0.3s;
         }
 
         .btn-grade:hover {
-            background-color: #1976D2;
+            background-color: #357abd;
         }
 
         .no-submissions {
             text-align: center;
-            padding: 2rem;
+            padding: 40px;
             color: #666;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-top: 1rem;
-        }
-
-        .logout-link {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            color: #dc3545;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .logout-link:hover {
-            color: #c82333;
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            margin-top: 20px;
         }
 
         .performance-section {
-            margin-top: 3rem;
             background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            margin-top: 20px;
         }
 
         .chart-container {
             max-width: 800px;
-            margin: 2rem auto;
+            margin: 20px auto;
+        }
+
+        .styled-dropdown {
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white url('data:image/svg+xml;utf8,<svg fill="%234a90e2" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center/1.2em;
+            font-size: 1rem;
+            color: var(--secondary-color);
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            min-width: 200px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .styled-dropdown:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-graded {
+            background-color: #d4edda;
+            color: #155724;
         }
 
         /* Modal Styles */
@@ -137,8 +131,8 @@
             padding: 2rem;
             width: 90%;
             max-width: 1200px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -160,7 +154,7 @@
 
         .file-preview-section h3 {
             margin-bottom: 1rem;
-            color: #333;
+            color: var(--secondary-color);
         }
 
         .file-preview-container {
@@ -195,15 +189,15 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: #333;
+            color: var(--secondary-color);
         }
 
         .form-group input,
         .form-group textarea {
             width: 100%;
-            padding: 0.75rem;
+            padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 5px;
             font-size: 1rem;
             background: white;
         }
@@ -233,50 +227,198 @@
             background-color: #5a6268;
         }
 
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+        }
+
+        .close-modal:hover {
+            color: black;
+        }
+
+        /* Toast Styles */
         .toast {
             position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            padding: 1rem 2rem;
-            background-color: #4CAF50;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
             color: white;
-            border-radius: 4px;
+            font-weight: 500;
             display: none;
-            z-index: 1001;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease-in-out;
         }
 
-        .styled-dropdown {
-            padding: 0.5rem 2rem 0.5rem 1rem;
-            border: 1px solid #4CAF50;
-            border-radius: 4px;
-            background: #f8f9fa url('data:image/svg+xml;utf8,<svg fill="%234CAF50" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 0.75rem center/1.2em;
-            font-size: 1rem;
-            color: #333;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            min-width: 200px;
-            cursor: pointer;
-            transition: border-color 0.3s;
+        .toast-success {
+            background-color: var(--success-color);
         }
 
-        .styled-dropdown:focus {
-            border-color: #2196F3;
-            outline: none;
+        .toast-error {
+            background-color: var(--danger-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .modal-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .styled-dropdown {
+                min-width: 150px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <!-- <%- include('../partials/header', { user }) %> -->
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-chalkboard-teacher"></i> Lecturer Panel</h3>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/lecturer/dashboard" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="/lecturer/assignments"><i class="fas fa-tasks"></i> My Assignments</a></li>
+                <li><a href="/lecturer/create-assignment"><i class="fas fa-plus"></i> Create Assignment</a></li>
+                <li><a href="/lecturer/submissions"><i class="fas fa-file-alt"></i> All Submissions</a></li>
+                <li><a href="/lecturer/reports"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                <li><a href="/auth/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
 
-    <a href="/auth/logout" class="logout-link">Logout</a>
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1><i class="fas fa-tachometer-alt"></i> Lecturer Dashboard</h1>
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i> Welcome, <%= user.full_name %>
+                </div>
+            </header>
+
+            <div class="quick-actions">
+                <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                <div class="action-buttons">
+                    <a href="/lecturer/create-assignment" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create New Assignment
+                    </a>
+                    <a href="/lecturer/submissions" class="btn btn-primary">
+                        <i class="fas fa-file-alt"></i> View All Submissions
+                    </a>
+                    <a href="/lecturer/reports" class="btn btn-primary">
+                        <i class="fas fa-chart-bar"></i> Generate Reports
+                    </a>
+                </div>
+            </div>
+
+            <div class="performance-section">
+                <h2><i class="fas fa-chart-line"></i> Submissions to Grade</h2>
+                <% if (submissions && submissions.length> 0) { %>
+                    <div class="table-container">
+                        <table class="grading-table">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Assignment</th>
+                                    <th>Submission Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% submissions.forEach(submission=> { %>
+                                    <tr>
+                                        <td>
+                                            <%= submission.student_name %>
+                                        </td>
+                                        <td>
+                                            <%= submission.assignment_title %>
+                                        </td>
+                                        <td>
+                                            <%= new Date(submission.submitted_at).toLocaleDateString() %>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-<%= submission.status.toLowerCase() %>">
+                                                <%= submission.status %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn-grade"
+                                                onclick="openGradingModal('<%= submission.submission_id %>', '<%= submission.student_name %>', '<%= submission.assignment_title %>', '<%= submission.submitted_at %>')">
+                                                <i class="fas fa-check-circle"></i> Grade Now
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <% } else { %>
+                        <div class="no-submissions">
+                            <i class="fas fa-inbox fa-3x" style="color: #ccc; margin-bottom: 20px;"></i>
+                            <h3>No submissions to grade</h3>
+                            <p>All submissions have been graded or no new submissions are available.</p>
+                        </div>
+                        <% } %>
+            </div>
+
+            <div class="performance-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2><i class="fas fa-chart-bar"></i> Class Performance</h2>
+                    <select id="assignmentDropdown" class="styled-dropdown">
+                        <% if (assignments && assignments.length> 0) { %>
+                            <% assignments.forEach(function(assignment) { %>
+                                <option value="<%= assignment.id %>">
+                                    <%= assignment.title %>
+                                </option>
+                                <% }); %>
+                                    <% } else { %>
+                                        <option disabled selected>No assignments found</option>
+                                        <% } %>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="classChart"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <!-- Grading Modal -->
     <div id="gradingModal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
-            <h2>Grade Submission</h2>
+            <h2><i class="fas fa-check-circle"></i> Grade Submission</h2>
             <div class="modal-grid">
                 <div class="file-preview-section">
                     <h3>Submission Preview</h3>
@@ -317,81 +459,6 @@
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
 
-    <div class="dashboard-container">
-        <div class="dashboard-header">
-            <h1>Lecturer Dashboard</h1>
-            <button onclick="location.href='/lecturer/create-assignment'" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Create Assignment
-            </button>
-        </div>
-
-        <div class="container">
-            <h2>Submissions to Grade</h2>
-            <% if (submissions && submissions.length> 0) { %>
-                <table class="grading-table">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Assignment</th>
-                            <th>Submission Date</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% submissions.forEach(submission=> { %>
-                            <tr>
-                                <td>
-                                    <%= submission.student_name %>
-                                </td>
-                                <td>
-                                    <%= submission.assignment_title %>
-                                </td>
-                                <td>
-                                    <%= new Date(submission.submitted_at).toLocaleDateString() %>
-                                </td>
-                                <td><span class="status-badge status-<%= submission.status.toLowerCase() %>">
-                                        <%= submission.status %>
-                                    </span></td>
-                                <td>
-                                    <button class="btn-grade"
-                                        onclick="openGradingModal('<%= submission.submission_id %>', '<%= submission.student_name %>', '<%= submission.assignment_title %>', '<%= submission.submitted_at %>')">
-                                        <i class="fas fa-check-circle"></i> Grade Now
-                                    </button>
-                                </td>
-                            </tr>
-                            <% }); %>
-                    </tbody>
-                </table>
-                <% } else { %>
-                    <div class="no-submissions">
-                        <i class="fas fa-inbox fa-2x"></i>
-                        <p>No submissions to grade at the moment.</p>
-                    </div>
-                    <% } %>
-
-                        <div class="performance-section" style="position: relative;">
-                            <h2 style="display: inline-block;">Class Performance</h2>
-                            <select id="assignmentDropdown" class="styled-dropdown"
-                                style="position: absolute; right: 0; top: 10px; min-width: 200px;">
-                                <% if (assignments && assignments.length> 0) { %>
-                                    <% assignments.forEach(function(assignment) { %>
-                                        <option value="<%= assignment.id %>">
-                                            <%= assignment.title %>
-                                        </option>
-                                        <% }); %>
-                                            <% } else { %>
-                                                <option disabled selected>No assignments found</option>
-                                                <% } %>
-                            </select>
-                            <div class="chart-container">
-                                <canvas id="classChart"></canvas>
-                            </div>
-                        </div>
-        </div>
-    </div>
-
-
     <script src="/js/lecturer.js"></script>
     <script src="/js/grading.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -408,8 +475,8 @@
                 datasets: [{
                     label: 'Grade Distribution',
                     data: [0, 0, 0, 0, 0],
-                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(74, 144, 226, 0.7)',
+                    borderColor: 'rgba(74, 144, 226, 1)',
                     borderWidth: 1
                 }]
             },
@@ -454,10 +521,40 @@
         dropdown.addEventListener('change', function () {
             updateGradeDistribution(this.value);
         });
-    </script>
 
-    <!-- DEBUG: Show performance data -->
-    <pre id="debug-performance" style="display:none;"><%- JSON.stringify(performance) %></pre>
+        // Modal functionality
+        function closeModal() {
+            document.getElementById('gradingModal').style.display = 'none';
+        }
+
+        // Close modal when clicking the X
+        document.querySelector('.close-modal').onclick = function () {
+            closeModal();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal();
+            }
+        }
+
+        // Toast functionality
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.style.display = 'block';
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-in-out';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.style.animation = 'slideIn 0.3s ease-in-out';
+                }, 300);
+            }, 3000);
+        }
+    </script>
 </body>
 
 </html>
