@@ -252,21 +252,11 @@
             <header class="dashboard-header">
                 <h1><i class="fas fa-tasks"></i> My Assignments</h1>
                 <div class="user-info">
-                    <i class="fas fa-user-circle"></i> Welcome, <%= user.full_name %>
+                    <button onclick="showAssignmentModal()" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create New Assignment
+                    </button>
                 </div>
             </header>
-
-            <div class="quick-actions">
-                <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
-                <div class="action-buttons">
-                    <a href="/lecturer/create-assignment" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Create New Assignment
-                    </a>
-                    <a href="/lecturer/dashboard" class="btn btn-primary">
-                        <i class="fas fa-home"></i> Back to Dashboard
-                    </a>
-                </div>
-            </div>
 
             <div class="table-container">
                 <h2><i class="fas fa-list"></i> Assignment List</h2>
@@ -352,6 +342,49 @@
                 <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
                 <button class="btn-delete" onclick="confirmDelete()">Delete</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Assignment Creation Modal -->
+    <div id="assignmentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2><i class="fas fa-plus"></i> Create New Assignment</h2>
+            <form id="assignmentForm" action="/lecturer/create-assignment" method="POST">
+                <div class="form-group">
+                    <label for="title">Assignment Title:</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="deadline">Deadline:</label>
+                    <input type="date" id="deadline" name="deadline" required>
+                </div>
+                <div class="form-group">
+                    <label for="maxMarks">Maximum Marks:</label>
+                    <input type="number" id="maxMarks" name="maxMarks" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="subjectId">Subject:</label>
+                    <select id="subjectId" name="subjectId" required>
+                        <option value="">Select a subject</option>
+                        <% if (subjects && subjects.length> 0) { %>
+                            <% subjects.forEach(function(subject) { %>
+                                <option value="<%= subject.id %>">
+                                    <%= subject.name %>
+                                </option>
+                                <% }); %>
+                                    <% } %>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAssignmentModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Assignment</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -571,6 +604,71 @@
                 }, 300);
             }, 3000);
         }
+
+        // Function to edit assignment (redirect to create-assignment page)
+        function editAssignment(id) {
+            window.location.href = `/lecturer/create-assignment?edit=${id}`;
+        }
+
+        // Assignment modal functionality
+        function showAssignmentModal() {
+            document.getElementById('assignmentModal').style.display = 'block';
+        }
+
+        function closeAssignmentModal() {
+            document.getElementById('assignmentModal').style.display = 'none';
+            document.getElementById('assignmentForm').reset();
+        }
+
+        // Close modal when clicking the X
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.onclick = function () {
+                this.closest('.modal').style.display = 'none';
+                // Reset assignment form if it's the assignment modal
+                if (this.closest('#assignmentModal')) {
+                    document.getElementById('assignmentForm').reset();
+                }
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                // Reset assignment form if it's the assignment modal
+                if (event.target.id === 'assignmentModal') {
+                    document.getElementById('assignmentForm').reset();
+                }
+            }
+        }
+
+        // Assignment form submission
+        document.getElementById('assignmentForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch('/lecturer/create-assignment', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast('Assignment created successfully!', 'success');
+                    // Close modal
+                    closeAssignmentModal();
+                    // Reload assignments table
+                    loadAssignments();
+                } else {
+                    showToast(data.message || 'Failed to create assignment', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        };
     </script>
 </body>
 
