@@ -11,6 +11,11 @@ router.get('/create-assignment', (req, res) => {
     res.render('lecturer/create-assignment', { user: req.session.user });
 });
 
+// My Assignments page
+router.get('/assignments-page', (req, res) => {
+    req.lecturerController.getAssignmentsPage(req, res);
+});
+
 // Handle assignment creation
 router.post('/create-assignment', (req, res) => {
     req.lecturerController.createAssignment(req, res);

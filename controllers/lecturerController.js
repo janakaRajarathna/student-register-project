@@ -331,6 +331,31 @@ class LecturerController {
             });
         }
     }
+
+    // Render assignments page
+    async getAssignmentsPage(req, res) {
+        try {
+            const lecturerId = req.session.user ? req.session.user.id : req.user.id;
+
+            // Get subjects for the lecturer
+            const [subjects] = await this.db.execute(`
+                SELECT id, name 
+                FROM subjects 
+                WHERE lecturer_id = ?
+                ORDER BY name
+            `, [lecturerId]);
+
+            res.render('lecturer/assignments', {
+                user: req.session.user,
+                subjects
+            });
+        } catch (error) {
+            console.error('Error in getAssignmentsPage:', error);
+            res.status(500).render('error', {
+                message: 'Error loading assignments page'
+            });
+        }
+    }
 }
 
 module.exports = LecturerController; 
