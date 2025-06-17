@@ -70,9 +70,9 @@
                     <button onclick="showSubjectModal()" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Create New Subject
                     </button>
-                    <a href="/admin/users/new" class="btn btn-primary">
+                    <button onclick="showUserModal()" class="btn btn-primary">
                         <i class="fas fa-user-plus"></i> Add New User
-                    </a>
+                    </button>
                     <a href="/admin/reports/generate" class="btn btn-primary">
                         <i class="fas fa-file-export"></i> Generate Report
                     </a>
@@ -124,6 +124,42 @@
                     </select>
                 </div>
                 <button type="submit" class="btn btn-primary">Create Subject</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Creation Modal -->
+    <div id="userModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add New User</h2>
+            <form id="userForm" action="/admin/users" method="POST">
+                <div class="form-group">
+                    <label for="fullName">Full Name:</label>
+                    <input type="text" id="fullName" name="full_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Role:</label>
+                    <select id="role" name="role" required>
+                        <option value="">Select Role</option>
+                        <option value="student">Student</option>
+                        <option value="lecturer">Lecturer</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Create User</button>
             </form>
         </div>
     </div>
@@ -237,15 +273,21 @@
             document.getElementById('subjectModal').style.display = 'block';
         }
 
-        // Close modal when clicking the X
-        document.querySelector('.close').onclick = function () {
-            document.getElementById('subjectModal').style.display = 'none';
+        function showUserModal() {
+            document.getElementById('userModal').style.display = 'block';
         }
+
+        // Close modal when clicking the X
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.onclick = function () {
+                this.closest('.modal').style.display = 'none';
+            }
+        });
 
         // Close modal when clicking outside
         window.onclick = function (event) {
-            if (event.target == document.getElementById('subjectModal')) {
-                document.getElementById('subjectModal').style.display = 'none';
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
             }
         }
 
@@ -291,6 +333,38 @@
                     }, 1000);
                 } else {
                     showToast(data.error || 'Failed to create subject', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        };
+
+        // User form submission
+        document.getElementById('userForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch('/admin/users', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast('User created successfully!', 'success');
+                    // Close modal
+                    document.getElementById('userModal').style.display = 'none';
+                    // Reset form
+                    this.reset();
+                    // Reload page after toast
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.error || 'Failed to create user', 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
