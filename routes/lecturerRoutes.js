@@ -16,6 +16,11 @@ router.get('/assignments-page', (req, res) => {
     req.lecturerController.getAssignmentsPage(req, res);
 });
 
+// All Submissions page
+router.get('/submissions', (req, res) => {
+    req.lecturerController.getSubmissionsPage(req, res);
+});
+
 // Handle assignment creation
 router.post('/create-assignment', (req, res) => {
     req.lecturerController.createAssignment(req, res);
@@ -64,6 +69,11 @@ router.get('/grade-distribution/:assignmentId', (req, res) => {
 // Get subjects for the logged-in lecturer
 router.get('/subjects', (req, res) => {
     req.lecturerController.getSubjects(req, res);
+});
+
+// Get all submissions for the lecturer
+router.get('/all-submissions', (req, res) => {
+    req.lecturerController.getAllSubmissions(req, res);
 });
 
 module.exports = router; 

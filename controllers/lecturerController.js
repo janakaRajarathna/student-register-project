@@ -356,6 +356,56 @@ class LecturerController {
             });
         }
     }
+
+    // Render submissions page
+    async getSubmissionsPage(req, res) {
+        try {
+            res.render('lecturer/submissions', {
+                user: req.session.user
+            });
+        } catch (error) {
+            console.error('Error in getSubmissionsPage:', error);
+            res.status(500).render('error', {
+                message: 'Error loading submissions page'
+            });
+        }
+    }
+
+    // Get all submissions for the lecturer
+    async getAllSubmissions(req, res) {
+        try {
+            const lecturerId = req.session.user ? req.session.user.id : req.user.id;
+
+            // Get all submissions for assignments created by this lecturer
+            const [submissions] = await this.db.execute(`
+                SELECT 
+                    s.id as submission_id,
+                    s.submitted_at,
+                    s.status,
+                    s.marks,
+                    s.feedback,
+                    u.full_name as student_name,
+                    a.title as assignment_title,
+                    a.id as assignment_id
+                FROM submissions s
+                JOIN users u ON s.student_id = u.id
+                JOIN assignments a ON s.assignment_id = a.id
+                WHERE a.created_by = ?
+                ORDER BY s.submitted_at DESC
+            `, [lecturerId]);
+
+            res.json({
+                success: true,
+                submissions
+            });
+        } catch (error) {
+            console.error('Error in getAllSubmissions:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error fetching submissions'
+            });
+        }
+    }
 }
 
 module.exports = LecturerController; 
