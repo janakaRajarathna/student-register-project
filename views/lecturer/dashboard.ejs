@@ -74,26 +74,6 @@
             margin: 20px auto;
         }
 
-        .styled-dropdown {
-            padding: 10px 40px 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: white url('data:image/svg+xml;utf8,<svg fill="%234a90e2" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center/1.2em;
-            font-size: 1rem;
-            color: var(--secondary-color);
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            min-width: 200px;
-            cursor: pointer;
-            transition: border-color 0.3s;
-        }
-
-        .styled-dropdown:focus {
-            border-color: var(--primary-color);
-            outline: none;
-        }
-
         .status-badge {
             padding: 4px 8px;
             border-radius: 12px;
@@ -130,7 +110,7 @@
             margin: 2% auto;
             padding: 2rem;
             width: 90%;
-            max-width: 1200px;
+            max-width: 500px;
             border-radius: 10px;
             box-shadow: var(--card-shadow);
             max-height: 90vh;
@@ -182,24 +162,29 @@
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 15px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
+            margin-bottom: 8px;
+            font-weight: 600;
             color: var(--secondary-color);
         }
 
-        .form-group input,
-        .form-group textarea {
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group textarea,
+        .form-group select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 1rem;
-            background: white;
+            font-size: 1em;
+            box-sizing: border-box;
         }
 
         .form-group textarea {
@@ -294,10 +279,6 @@
             .modal-grid {
                 grid-template-columns: 1fr;
             }
-
-            .styled-dropdown {
-                min-width: 150px;
-            }
         }
     </style>
 </head>
@@ -329,9 +310,9 @@
             <div class="quick-actions">
                 <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
                 <div class="action-buttons">
-                    <a href="/lecturer/create-assignment" class="btn btn-primary">
+                    <button onclick="showAssignmentModal()" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Create New Assignment
-                    </a>
+                    </button>
                     <a href="/lecturer/submissions" class="btn btn-primary">
                         <i class="fas fa-file-alt"></i> View All Submissions
                     </a>
@@ -395,7 +376,7 @@
             <div class="performance-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2><i class="fas fa-chart-bar"></i> Class Performance</h2>
-                    <select id="assignmentDropdown" class="styled-dropdown">
+                    <select id="assignmentDropdown" style="min-width: 200px;">
                         <% if (assignments && assignments.length> 0) { %>
                             <% assignments.forEach(function(assignment) { %>
                                 <option value="<%= assignment.id %>">
@@ -453,6 +434,49 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Assignment Creation Modal -->
+    <div id="assignmentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2><i class="fas fa-plus"></i> Create New Assignment</h2>
+            <form id="assignmentForm" action="/lecturer/create-assignment" method="POST">
+                <div class="form-group">
+                    <label for="title">Assignment Title:</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="deadline">Deadline:</label>
+                    <input type="date" id="deadline" name="deadline" required>
+                </div>
+                <div class="form-group">
+                    <label for="maxMarks">Maximum Marks:</label>
+                    <input type="number" id="maxMarks" name="maxMarks" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="subjectId">Subject:</label>
+                    <select id="subjectId" name="subjectId" required>
+                        <option value="">Select a subject</option>
+                        <% if (subjects && subjects.length> 0) { %>
+                            <% subjects.forEach(function(subject) { %>
+                                <option value="<%= subject.id %>">
+                                    <%= subject.name %>
+                                </option>
+                                <% }); %>
+                                    <% } %>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeAssignmentModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Assignment</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -554,6 +578,76 @@
                 }, 300);
             }, 3000);
         }
+
+        // Modal functionality
+        function showSubjectModal() {
+            document.getElementById('subjectModal').style.display = 'block';
+        }
+
+        function showUserModal() {
+            document.getElementById('userModal').style.display = 'block';
+        }
+
+        function showAssignmentModal() {
+            document.getElementById('assignmentModal').style.display = 'block';
+        }
+
+        function closeAssignmentModal() {
+            document.getElementById('assignmentModal').style.display = 'none';
+            document.getElementById('assignmentForm').reset();
+        }
+
+        // Close modal when clicking the X
+        document.querySelectorAll('.close-modal').forEach(closeBtn => {
+            closeBtn.onclick = function () {
+                this.closest('.modal').style.display = 'none';
+                // Reset assignment form if it's the assignment modal
+                if (this.closest('#assignmentModal')) {
+                    document.getElementById('assignmentForm').reset();
+                }
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                // Reset assignment form if it's the assignment modal
+                if (event.target.id === 'assignmentModal') {
+                    document.getElementById('assignmentForm').reset();
+                }
+            }
+        }
+
+        // Assignment form submission
+        document.getElementById('assignmentForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch('/lecturer/create-assignment', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast('Assignment created successfully!', 'success');
+                    // Close modal
+                    closeAssignmentModal();
+                    // Reload page after toast
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.message || 'Failed to create assignment', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        };
     </script>
 </body>
 
