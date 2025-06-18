@@ -3,7 +3,6 @@ CREATE DATABASE IF NOT EXISTS assignment_system;
 USE assignment_system;
 
 -- Users Table
-------------------------------------------------------------------------------------------------------+
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
@@ -71,15 +70,3 @@ CREATE TABLE `assignments` (
   CONSTRAINT `submissions_ibfk_3` FOREIGN KEY (`marked_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ;
 
--- Sample Data (Optional)
-INSERT INTO users (name, email, password, role) VALUES
-('John Lecturer', 'lecturer@example.com', '$2a$10$ExampleHash', 'lecturer'),
-('Alice Student', 'student@example.com', '$2a$10$ExampleHash', 'student');
-
-INSERT INTO subjects (name, lecturer_id) VALUES
-('Mathematics', 1),
-('Physics', 1);
-
-INSERT INTO assignments (title, description, deadline, lecturer_id) VALUES
-('Algebra Basics', 'Complete chapter 1 exercises', '2023-12-31', 1),
-('Newton Laws', 'Solve physics problems', '2024-01-15', 1); 
