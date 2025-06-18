@@ -258,7 +258,17 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            precision: 0
+                            precision: 0,
+                            stepSize: 1,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function (value) {
+                                    if (Number.isInteger(value)) {
+                                        return value;
+                                    }
+                                    return '';
+                                }
+                            }
                         }
                     }
                 }
