@@ -320,8 +320,7 @@
 
                 if (result.success && result.distribution) {
                     const dist = result.distribution;
-                    const data = [dist.A || 0, dist.B || 0, dist.C || 0, dist.D || 0, dist.F || 0];
-
+                    const data = [dist.A || 0, dist.B || 0, dist.C || 0, dist.D || 0, dist.F || 0].map(Number);
                     gradeDistributionChart.data.datasets[0].data = data;
                     gradeDistributionChart.update();
 
@@ -333,15 +332,15 @@
                             <div class="stat-label">Total Students</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">${dist.A || 0}</div>
+                            <div class="stat-value">${data[0]}</div>
                             <div class="stat-label">Grade A</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">${dist.B || 0}</div>
+                            <div class="stat-value">${data[1]}</div>
                             <div class="stat-label">Grade B</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">${dist.C || 0}</div>
+                            <div class="stat-value">${data[2]}</div>
                             <div class="stat-label">Grade C</div>
                         </div>
                     `;
