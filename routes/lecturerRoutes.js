@@ -76,4 +76,14 @@ router.get('/all-submissions', (req, res) => {
     req.lecturerController.getAllSubmissions(req, res);
 });
 
+// Reports page
+router.get('/reports', (req, res) => {
+    req.lecturerController.getReportsPage(req, res);
+});
+
+// Get student performance data for reports
+router.get('/student-performance/:studentId', (req, res) => {
+    req.lecturerController.getStudentPerformance(req, res);
+});
+
 module.exports = router; 

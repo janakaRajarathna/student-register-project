@@ -137,6 +137,48 @@ class Lecturer {
             throw error;
         }
     }
+
+    async getStudentsForLecturer(lecturerId) {
+        try {
+            const [students] = await this.db.query(`
+                SELECT DISTINCT
+                    u.id,
+                    u.full_name,
+                    u.username
+                FROM users u
+                JOIN submissions s ON u.id = s.student_id
+                JOIN assignments a ON s.assignment_id = a.id
+                WHERE a.created_by = ? AND u.role = 'student'
+                ORDER BY u.full_name
+            `, [lecturerId]);
+            return students;
+        } catch (error) {
+            console.error('Error in getStudentsForLecturer:', error);
+            throw error;
+        }
+    }
+
+    async getStudentPerformance(lecturerId, studentId) {
+        try {
+            const [performance] = await this.db.query(`
+                SELECT 
+                    a.id as assignment_id,
+                    a.title as assignment_title,
+                    a.max_marks,
+                    s.marks,
+                    s.submitted_at,
+                    ROUND((s.marks / a.max_marks) * 100, 2) as percentage
+                FROM assignments a
+                JOIN submissions s ON a.id = s.assignment_id
+                WHERE a.created_by = ? AND s.student_id = ? AND s.status = 'MARKED'
+                ORDER BY a.deadline ASC
+            `, [lecturerId, studentId]);
+            return performance;
+        } catch (error) {
+            console.error('Error in getStudentPerformance:', error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Lecturer; 

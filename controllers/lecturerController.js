@@ -406,6 +406,52 @@ class LecturerController {
             });
         }
     }
+
+    // Render reports page
+    async getReportsPage(req, res) {
+        try {
+            const lecturerId = req.session.user ? req.session.user.id : req.user.id;
+
+            // Get assignments for the lecturer
+            const assignmentsResult = await this.assignmentModel.getByLecturer(lecturerId);
+            const assignments = assignmentsResult.success ? assignmentsResult.assignments : [];
+
+            // Get students for the lecturer
+            const students = await this.lecturerModel.getStudentsForLecturer(lecturerId);
+
+            res.render('lecturer/reports', {
+                user: req.session.user,
+                assignments,
+                students
+            });
+        } catch (error) {
+            console.error('Error in getReportsPage:', error);
+            res.status(500).render('error', {
+                message: 'Error loading reports page'
+            });
+        }
+    }
+
+    // Get student performance data
+    async getStudentPerformance(req, res) {
+        try {
+            const lecturerId = req.session.user ? req.session.user.id : req.user.id;
+            const studentId = req.params.studentId;
+
+            const performance = await this.lecturerModel.getStudentPerformance(lecturerId, studentId);
+
+            res.json({
+                success: true,
+                performance
+            });
+        } catch (error) {
+            console.error('Error in getStudentPerformance:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error fetching student performance'
+            });
+        }
+    }
 }
 
 module.exports = LecturerController; 
